@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {
-  View,
-  Text,
-  Image,
+  View,Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,

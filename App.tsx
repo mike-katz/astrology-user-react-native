@@ -42,6 +42,7 @@ import PanditReviewListScreen from './src/screens/Profile/PanditReviewListScreen
 import PanditProfileDetailsScreen from './src/screens/HomeDetails/PanditProfileDetailsScreen';
 import FollowingScreen from './src/screens/Profile/FollowingScreen';
 import ChatWindow from './src/screens/HomeDetails/ChatWindow';
+import SettingsScreen from './src/screens/Settings/SettingsScreen';
 
 
  // Types for navigation
@@ -66,11 +67,13 @@ import ChatWindow from './src/screens/HomeDetails/ChatWindow';
    PanditReviewListScreen: undefined;
    FollowingScreen: undefined;
    ChatWindow:undefined;
+   SettingsScreen:undefined
  };
  
  type AuthStackParamList = {
    Login: undefined;
    VerifyOtp: { phone: string };
+   GurujiCongrats:undefined;
  };
 
 // Create navigators
@@ -214,6 +217,11 @@ const RootNavigator = ({ initialRoute }: { initialRoute: keyof RootStackParamLis
     <RootStack.Screen
         name="ChatWindow"
         component={ChatWindow}
+        options={{ headerShown: false }} />
+
+    <RootStack.Screen
+        name="SettingsScreen"
+        component={SettingsScreen}
         options={{ headerShown: false }} />
         
     </RootStack.Navigator>)

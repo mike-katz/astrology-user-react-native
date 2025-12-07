@@ -110,7 +110,13 @@ const buildNumber = DeviceInfo.getBuildNumber(); // e.g. "101"
       break;
 
     case "Settings":
-      navigation.navigate("SettingsScreen");
+       if(ServiceConstants.User_ID==null){
+          navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'AuthStack' }]
+                      });
+       }else
+          navigation.push("SettingsScreen");
       break;
 
     default:

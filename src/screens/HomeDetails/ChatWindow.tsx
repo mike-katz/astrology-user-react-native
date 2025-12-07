@@ -15,7 +15,6 @@ import {
 } from "react-native";
 import FastImage from "react-native-fast-image";
 import Feather from "react-native-vector-icons/Feather";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors, Fonts } from "../../styles";
 import CallTab from "../../assets/icons/CallTab";
@@ -24,6 +23,9 @@ import SearchIcon from "../../assets/icons/SearchIcon";
 import { BackIcon } from "../../assets/icons";
 import { useNavigation } from "@react-navigation/native";
 import { socket } from '../../../socket';
+import RateAstrologerModal from "../../utils/RateAstrologerModal";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 const { width } = Dimensions.get("window");
 
 
@@ -47,11 +49,14 @@ export default function ChatWindow() {
     const navigation = useNavigation<any>();
     const [isConnected, setIsConnected] = useState(false);
     const [transport, setTransport] = useState('N/A');
-
+    const [showRateModal, setShowRateModal] = useState(false);
     const [messages, setMessages] = useState<Message[]>(DUMMY_MESSAGES);
     const [text, setText] = useState("");
     const flatRef = useRef<FlatList>(null);
     const [isChatEnded, setIsChatEnded] = useState(false);
+    const userDetailsData = useSelector((state: RootState) => state.userDetails.userDetails);
+    const [ratingStar, setRatingStar] = useState(0);
+    const [message, setMessage] = useState("");
     const link_web  = 'https://astrotalkguruji.store';
     const avatarUri =
         "https://d1gcna0o0ldu5v.cloudfront.net/fit-in/135x135/images/77fb9922-d879-4e6c-b981-bb50813cf5c9.jpg"; // replace with your avatar or astrologer image
@@ -183,12 +188,29 @@ export default function ChatWindow() {
         navigation.goBack();
     }
     const onEdit = () =>{
-
+        setShowRateModal(true);
     }
 
     useEffect(() => {
     flatRef.current?.scrollToEnd({ animated: true });
     }, [messages]);
+
+
+    const onSubmitRating = (data: any) => {
+        console.log("Review Data → ", data);
+        setMessage(data.review);
+        setRatingStar(data.rating);
+        /*
+            {
+            rating: 4,
+            review: "Good experience",
+            hideName: true,
+            userId: 21,
+            userName: "John",
+            profile: "img_url"
+            }
+        */
+    };
 
     return (
 
@@ -218,7 +240,9 @@ export default function ChatWindow() {
                         <TouchableOpacity onPress={() => { }} style={{width:30,height:30,padding: 0,justifyContent:'center'}}>
                             <CallTab width={24} height={24} />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => { }} style={{width:30,height:30,padding: 0,justifyContent:'center'}}>
+                        <TouchableOpacity onPress={() => {  navigation.navigate('MainTabs', {
+                            screen: 'Remedies',
+                        }); }} style={{width:30,height:30,padding: 0,justifyContent:'center'}}>
                             <RemediesTab width={24} height={24} />
                         </TouchableOpacity>
                         <TouchableOpacity style={{width:30,height:30,padding: 0,justifyContent:'center',marginBottom:10,marginRight:10}} >
@@ -254,13 +278,15 @@ export default function ChatWindow() {
 
                         {/* Rating */}
                         <View style={styles.ratingRow}>
-                            <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                {Array.from({ length: 5 }).map((_, i) => (
+                            <View style={{marginRight:40}}>
+                            <View style={{marginLeft:5, flexDirection: "row", alignItems: "center" }}>
+                                {Array.from({ length: ratingStar }).map((_, i) => (
                                     <Feather key={i} name="star" size={14} color={i < 4 ? colors.primaryColor : "#D1D1D1"} style={{ marginRight: 6 }} />
                                 ))}
                             </View>
-                            <Text style={styles.ratingLabel}>Test</Text>
-                            <TouchableOpacity onPress={onEdit} style={{position:'absolute',right:10}}>
+                            <Text style={styles.ratingLabel}>{message}</Text>
+                            </View>
+                            <TouchableOpacity onPress={onEdit} style={{flex:1,position:'absolute',right:20,top:10}}>
                                 <Feather name="edit-2" size={16} color="#555" />
                             </TouchableOpacity>
                         </View>
@@ -316,6 +342,13 @@ export default function ChatWindow() {
                         </View>
                     </View>
                 </KeyboardAvoidingView>
+
+                <RateAstrologerModal
+                    visible={showRateModal}
+                    onClose={() => setShowRateModal(false)}
+                    onSubmit={onSubmitRating}
+                    />
+
             </SafeAreaView>
         </SafeAreaProvider>
     );

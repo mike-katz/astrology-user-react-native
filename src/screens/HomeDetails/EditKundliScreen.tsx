@@ -7,29 +7,26 @@ import {
     StyleSheet,
     ScrollView,
     Alert,
-    Switch,
     useColorScheme,
 } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-import DatePicker from "react-native-date-picker";
 import Feather from "react-native-vector-icons/Feather";
-import { useNavigation } from "@react-navigation/native";
 import { colors, Fonts } from "../../styles";
 import { BackIcon } from "../../assets/icons";
+import DatePickerDialog from "../../utils/DatePickerDialog";
+import TimePickerDialog from "../../utils/TimePickerDialog";
 
 const EditKundliScreen = ({ navigation, route }: any) => {
-    //   const navigation = useNavigation<any>();
      const colorScheme = useColorScheme();
     const { onSelect, item } = route.params;
     const [name, setName] = useState(item.name);
     const [gender, setGender] = useState("Female");
     const [showGenderOptions, setShowGenderOptions] = useState(false);
 
-    const [date, setDate] = useState(new Date(2005, 3, 8));
-    const [showDatePicker, setShowDatePicker] = useState(false);
-
+    const [date, setDate] = useState(new Date());
     const [time, setTime] = useState(new Date());
-    const [showTimePicker, setShowTimePicker] = useState(false);
+    const [showDatePickerModal, setShowDatePickerModal] = useState(false);
+    const [showTimePickerModal, setShowTimePickerModal] = useState(false);
 
     const [dontKnowTime, setDontKnowTime] = useState(false);
 
@@ -86,7 +83,7 @@ const EditKundliScreen = ({ navigation, route }: any) => {
                     {/* Header */}
                     <View style={styles.header}>
                         <TouchableOpacity onPress={() => navigation.goBack()}>
-                            <BackIcon size={16} onPress={handleBack} />
+                            <BackIcon size={16} onPress={handleBack} tintColor={undefined} />
                         </TouchableOpacity>
                         <Text style={styles.headerTitle}>Edit Kundli</Text>
                     </View>
@@ -131,7 +128,7 @@ const EditKundliScreen = ({ navigation, route }: any) => {
                         )}
 
                         {/* Date field */}
-                        <TouchableOpacity style={styles.inputBox} onPress={() => setShowDatePicker(true)}>
+                        <TouchableOpacity style={styles.inputBox} onPress={() => setShowDatePickerModal(true)}>
                             <Feather name="calendar" size={18} color="#444" />
                             <Text style={styles.fieldText}>
                                 {date.toLocaleDateString("en-GB", {
@@ -144,7 +141,7 @@ const EditKundliScreen = ({ navigation, route }: any) => {
 
                         {/* Time field */}
                         {(
-                            <TouchableOpacity style={styles.inputBox} onPress={() => setShowTimePicker(true)}>
+                            <TouchableOpacity style={styles.inputBox} onPress={() => setShowTimePickerModal(true)}>
                                 <Feather name="clock" size={18} color="#444" />
                                 <Text style={styles.fieldText}>
                                     {time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -185,37 +182,26 @@ const EditKundliScreen = ({ navigation, route }: any) => {
                     </ScrollView>
 
                     {/* DATE PICKER */}
-                    <DatePicker
-                        modal
-                        mode="date"
-                        open={showDatePicker}
-                        date={date}
-                        onConfirm={(date) => {
-                            setShowDatePicker(false)
-                            setDate(date)
+                    <DatePickerDialog
+                        visible={showDatePickerModal}
+                        onClose={() => setShowDatePickerModal(false)}
+                        onApply={(dateData) => {
+                            console.log("User date:", dateData);
+                            console.log("ISO:", dateData.toISOString());
+                            console.log("Formatted:", dateData.toLocaleDateString());
+                            setDate(dateData);
                         }}
-                        onCancel={() => {
-                            setShowDatePicker(false)
-                        }}
-                        theme="light"
-                    />
-
-
+                            />
                     {/* TIME PICKER */}
-                    <DatePicker
-                        modal
-                        mode="time"
-                        open={showTimePicker}
-                        date={date}
-                        onConfirm={(selectedTime) => {
-                            setShowTimePicker(false)
-                            setTime(selectedTime)
+                    <TimePickerDialog
+                        visible={showTimePickerModal}
+                        onClose={() => setShowTimePickerModal(false)}
+                        onApply={(dateData) => {
+                            console.log("User time:", dateData);
+                            setTime(dateData);
+                            setDontKnowTime(false);
                         }}
-                        onCancel={() => {
-                            setShowTimePicker(false)
-                        }}
-                        theme="light"
-                    />
+                        />
 
                 </View>
 

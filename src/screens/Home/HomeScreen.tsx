@@ -52,13 +52,6 @@ const features = [
   { id:4,title: 'Free Chat', icon: FreeChatIcon },
 ];
 
-// const astrologers = [
-// { id: '1', name: 'Anvay', price: '₹93/min', img: 'https://d1gcna0o0ldu5v.cloudfront.net/fit-in/50x50//consultant_pic/p-37580.jpg' },
-// { id: '2', name: 'Rishank', price: '₹88/min', img: 'https://d1gcna0o0ldu5v.cloudfront.net/fit-in/50x50//consultant_pic/p-37584.jpg' },
-// { id: '3', name: 'PriyankaS', price: '₹66/min', img: 'https://d1gcna0o0ldu5v.cloudfront.net/fit-in/50x50//consultant_pic/p-37592.jpg' },
-// ];
-
-
 const remedies = [
 { id: '1', name: 'Gemstone Consultation', img: 'https://d1gcna0o0ldu5v.cloudfront.net/fit-in/135x135/images/77fb9922-d879-4e6c-b981-bb50813cf5c9.jpg' },
 { id: '2', name: 'VIP E-Pooja', img: 'https://d1gcna0o0ldu5v.cloudfront.net/fit-in/135x135/images/4f7fbd56-ade5-42b8-b4a0-224d7ba0b50f.jpeg' },
@@ -189,7 +182,7 @@ const callPanditApi = () => {
           <TouchableOpacity style={styles.featureItem} key={idx} onPress={() => {
                 if (item.id === 1) navigation.navigate("DailyHoroscopeScreen");
                 else if (item.id === 2) navigation.push("KundliListScreen");
-                else if (item.id === 3) navigation.navigate("Chat");
+                else if (item.id === 3) navigation.navigate("KundliMatchingScreen");
                 else if (item.id === 4) navigation.navigate("Chat");
             }}>
             <IconComponent width={60} height={60} />
@@ -529,8 +522,7 @@ profileWrapper: {
   yellowBar: {
     width: "100%",
     height: 2,
-    backgroundColor: "#FBB917",
-    // Only bottom-left & bottom-right radius
+    backgroundColor: colors.primaryColor,
     borderBottomLeftRadius: 18,
     borderBottomRightRadius: 18,
 
@@ -625,7 +617,7 @@ ribbonContainer: {
 ribbon: {
   width: 110,                       // long enough to cross the corner
   paddingVertical: 2,
-  backgroundColor: "#E3B23C",       // same golden color
+  backgroundColor: colors.primaryColor,       // same golden color
   transform: [{ rotate: "-45deg" }],// angle like screenshot
   justifyContent: "center",
   alignItems: "center",
@@ -656,7 +648,7 @@ astroImg1: {
   marginTop: 16,
   backgroundColor: '#FFFAE6',        // light yellow fill
   borderWidth: 2,
-  borderColor: '#F1C42B',  
+  borderColor: colors.primaryColor,  
 },
 astroPrice: { fontSize: 13, color: '#555', marginBottom: 10 },
 

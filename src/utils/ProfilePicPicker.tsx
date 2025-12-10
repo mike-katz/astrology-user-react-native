@@ -12,6 +12,7 @@ import {
   SafeAreaView,
   StatusBar,
 } from 'react-native';
+import { colors } from '../styles';
 
 const {width} = Dimensions.get('window');
 const GRID_GAP = 12;
@@ -187,7 +188,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   avatarWrapActive: {
-    borderColor: '#F1C42B',
+    borderColor: colors.primaryColor,
     backgroundColor: '#FFF9EB',
   },
   avatarImg: {
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
   applyBtn: {
     flex: 1,
     marginLeft: 10,
-    backgroundColor: '#F1C42B',
+    backgroundColor: colors.primaryColor,
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',

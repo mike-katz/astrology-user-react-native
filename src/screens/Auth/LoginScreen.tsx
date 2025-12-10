@@ -31,10 +31,11 @@ type RootStackParamList = {
   Login: undefined;
   VerifyOtp: { phone: string };
 };
-// import { useTranslation } from 'react-i18next';
-// import i18n from "../../localization/i18n";
+import { useTranslation } from 'react-i18next';
+import i18n from "../../localization/i18n";
 export default function LoginScreen() {
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
+  // i18n.changeLanguage('hi');
   const dispatch = useDispatch();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [countryCode, setCountryCode] = useState('IN');

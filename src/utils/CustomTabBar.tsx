@@ -12,7 +12,7 @@ import ChatTab from '../assets/icons/ChatTab';
 import ChatTabDisable from '../assets/icons/ChatTabDisable';
 
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
-  const ICON_WIDTH = 25;
+  const ICON_WIDTH = 33;
   const ICON_HEIGHT = 25;
   return (
    
@@ -75,8 +75,9 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
             onPress={onPress}
             style={styles.tabButton}
             activeOpacity={0.8}>
-            {getTabIcon(route.name, isFocused)}
-             
+            <View style={{marginLeft:4}}>   
+                {getTabIcon(route.name, isFocused)}
+             </View> 
             <Text style={{ fontFamily:Fonts.Regular,color: isFocused ? '#000' : '#7B7B7B',fontSize: 10,marginBottom:7}}>{tabName}</Text>    
           </TouchableOpacity>
         );

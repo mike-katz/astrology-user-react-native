@@ -82,7 +82,9 @@ export default function ChatWindow({route}:any) {
             //   setLoadingMore(false);
             // }
             // Append not replace
-            setMessages1(prev => [...prev, ...(messages)]);
+            // setMessages1(prev => [...prev, ...(messages)]);
+               // reverse if needed
+            setMessages1(prev => [...messages, ...prev]);
         }
 
       });
@@ -297,6 +299,8 @@ export default function ChatWindow({route}:any) {
                             renderItem={renderMessage}
                             contentContainerStyle={styles.chatContent}
                             showsVerticalScrollIndicator={false}
+                            inverted
+                            maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
                         />
 
                         <Text>Status: { isConnected ? 'connected' : 'disconnected' }</Text>

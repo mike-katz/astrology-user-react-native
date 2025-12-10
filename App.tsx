@@ -44,6 +44,7 @@ import FollowingScreen from './src/screens/Profile/FollowingScreen';
 import ChatWindow from './src/screens/HomeDetails/ChatWindow';
 import SettingsScreen from './src/screens/Settings/SettingsScreen';
 import OrderHistoryScreen from './src/screens/HomeDetails/OrderHistoryScreen';
+import KundliMatchingScreen from './src/screens/HomeDetails/KundliMatchingScreen';
 
 
  // Types for navigation
@@ -70,6 +71,7 @@ import OrderHistoryScreen from './src/screens/HomeDetails/OrderHistoryScreen';
    ChatWindow:undefined;
    SettingsScreen:undefined;
    OrderHistoryScreen:undefined;
+   KundliMatchingScreen:undefined;
  };
  
  type AuthStackParamList = {
@@ -230,6 +232,11 @@ const RootNavigator = ({ initialRoute }: { initialRoute: keyof RootStackParamLis
         name="OrderHistoryScreen"
         component={OrderHistoryScreen}
         options={{ headerShown: false }} />    
+
+    <RootStack.Screen
+        name="KundliMatchingScreen"
+        component={KundliMatchingScreen}
+        options={{ headerShown: false }} />      
         
     </RootStack.Navigator>)
 };

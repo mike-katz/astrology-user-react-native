@@ -35,16 +35,16 @@ const EditProfileScreen = ({ navigation, route }: any) => {
      const dispatch = useDispatch();
      const colorScheme = useColorScheme();
     const [activity, setActivity] = useState<boolean>(false);
-    const [showDatePickerModal, setShowDatePickerModal] = useState(false);
-    const [showTimePickerModal, setShowTimePickerModal] = useState(false);
+ 
     const [name, setName] = useState('');
     const [profilePic, setProfilePic] = useState('');
     const [gender, setGender] = useState("Male");
     const [showGenderOptions, setShowGenderOptions] = useState(false);
-    const [date, setDate] = useState(new Date(2005, 3, 8));
-    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [date, setDate] = useState(new Date());
     const [time, setTime] = useState(new Date());
-    const [showTimePicker, setShowTimePicker] = useState(false);
+    const [showDatePickerModal, setShowDatePickerModal] = useState(false);
+    const [showTimePickerModal, setShowTimePickerModal] = useState(false);
+
     const [dontKnowTime, setDontKnowTime] = useState(false);
     const [location, setLocation] = useState('');
     const [currentAddress, setCurrentAddress] = useState('');
@@ -168,9 +168,11 @@ const EditProfileScreen = ({ navigation, route }: any) => {
     
     const handleDontKnowTime = () => {
         console.log("Dont know time:", !dontKnowTime);
-        if(!dontKnowTime)
-        setTime(new Date('2000-01-01T12:00:00')); // Set to default time
-        setDontKnowTime(!dontKnowTime)
+        if(!dontKnowTime){
+            setTime(new Date('2000-01-01T12:00:00')); // Set to default time
+            setDontKnowTime(!dontKnowTime)
+        }
+        
     }
 
 const renderProfilePic = () => {
@@ -210,7 +212,7 @@ const renderProfilePic = () => {
                        
                         <Text style={styles.headerTitle}>Edit Profile</Text>
                          <TouchableOpacity onPress={() => navigation.goBack()}>
-                            <BackIcon size={16} onPress={handleBack} />
+                            <BackIcon size={16} onPress={handleBack} tintColor={undefined} />
                         </TouchableOpacity>
                         <View style={{ position: 'absolute', width: '100%', height: .4, backgroundColor: '#7B7B7B', bottom: 0 }}></View>
                     </View>
@@ -268,9 +270,9 @@ const renderProfilePic = () => {
                         {/* Date field */}
                         <Text style={styles.inputLable}>Date of Birth</Text>
                         <TouchableOpacity style={styles.inputBox} onPress={() => {
-                            if(Platform.OS === 'android')
-                                setShowDatePicker(true);
-                            else
+                            // if(Platform.OS === 'android')
+                            //     setShowDatePicker(true);
+                            // else
                                 setShowDatePickerModal(true);
                             }}>
                             <Feather name="calendar" size={18} color="#444" />
@@ -288,9 +290,9 @@ const renderProfilePic = () => {
                         {(
                             
                             <TouchableOpacity style={styles.inputBox} onPress={() => {
-                                    if(Platform.OS === 'android')
-                                        setShowTimePicker(true);
-                                    else
+                                    // if(Platform.OS === 'android')
+                                    //     setShowTimePicker(true);
+                                    // else
                                         setShowTimePickerModal(true);
                                     }}>
                                 <Feather name="clock" size={18} color="#444" />
@@ -356,8 +358,8 @@ const renderProfilePic = () => {
                                 value={pincode}
                                 onChangeText={setPincode}
                                 placeholder="Enter your area pincode"
-                                     placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#666'}
-                                                cursorColor={colors.primaryColor}
+                                placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#666'}
+                                cursorColor={colors.primaryColor}
                             />
                         </View>
                         {/* Language field */}
@@ -392,42 +394,9 @@ const renderProfilePic = () => {
 
                     </ScrollView>
 
-                    {/* DATE PICKER */}
-                    <DatePicker
-                        modal
-                        mode="date"
-                        open={showDatePicker}
-                        date={date}
-                        maximumDate={new Date()}
-                        onConfirm={(date) => {
-                            setShowDatePicker(false)
-                            setDate(date)
-                        }}
-                        onCancel={() => {
-                            setShowDatePicker(false)
-                        }}
-                       theme="light"
-                        />
-
-                    {/* TIME PICKER */}
-                    <DatePicker
-                        modal
-                        mode="time"
-                        open={showTimePicker}
-                        date={time}
-                        onConfirm={(selectedTime) => {
-                            setShowTimePicker(false)
-                            setTime(selectedTime)
-                            setDontKnowTime(!dontKnowTime)
-                        }}
-                        onCancel={() => {
-                            setShowTimePicker(false)
-                        }}
-                        theme="light"
-                    />
-
                 </View>
 
+                {/* DATE PICKER */}
                 <DatePickerDialog
                     visible={showDatePickerModal}
                     onClose={() => setShowDatePickerModal(false)}
@@ -438,14 +407,14 @@ const renderProfilePic = () => {
                         setDate(dateData);
                     }}
                     />
-
+                {/* TIME PICKER */}
                 <TimePickerDialog
                     visible={showTimePickerModal}
                     onClose={() => setShowTimePickerModal(false)}
                     onApply={(dateData) => {
-                        console.log("User date:", dateData);
+                        console.log("User time:", dateData);
                         setTime(dateData);
-                        setDontKnowTime(!dontKnowTime)
+                        setDontKnowTime(false);
                     }}
                     />
 

@@ -22,7 +22,7 @@ import WalletIcon from '../../assets/icons/WalletIcon';
 import WalletPlusIcon from '../../assets/icons/WalletPlusIcon';
 import SearchIcon from '../../assets/icons/SearchIcon';
 import OrderHistoryIcon from '../../assets/icons/OrderHistoryIcon';
-import { Fonts } from '../../styles';
+import { colors, Fonts } from '../../styles';
 import FilterIcon from '../../assets/icons/FilterIcon';
 import AllIcon from '../../assets/icons/AllIcon';
 import NewIcon from '../../assets/icons/NewIcon';
@@ -500,7 +500,7 @@ profileWrapper: {
     borderRadius: 35 / 2,
     backgroundColor: '#FFFAE6',        // light yellow fill
     borderWidth: 2,
-    borderColor: '#F1C42B',           // yellow border
+    borderColor: colors.primaryColor,           // yellow border
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -558,7 +558,6 @@ profileWrapper: {
     borderRadius:10,
     height: BANNER_HEIGHT, 
     width: '100%', 
-    // backgroundColor: '#F3C93E', 
     justifyContent: 'center' 
   },
   bannerImg: { 

@@ -45,64 +45,6 @@ export default function PanditProfileDetailsScreen({route}:any) {
   const [showWallet, setShowWallet] = useState(false); //For Wallet
   const [reviews, setReviews] = useState<any[]>([]);
 
-  // const astrologersDetails = {
-  //   "id": 3,
-  //   "mobile": "9876543210",
-  //   "countryCode": "+91",
-  //   "name": "Pandit Test User",
-  //   "dob": "1990-05-12T00:00:00.000Z",
-  //   "city": "Varanasi",
-  //   "email": "pandit.test@example.com",
-  //   "status": "active",
-  //   "isOnline": false,
-  //   "isStreaming": false,
-  //   "isverified": true,
-  //   "availableFor": "call",
-  //   "knowledge": [
-  //     "vedic",
-  //     "tarot"
-  //   ],
-  //   "experience": "10 years",
-  //   "charge": 15,
-  //   "language": [
-  //     "hindi",
-  //     "english"
-  //   ],
-  //   "totalChat": 0,
-  //   "totalCall": 0,
-  //   "about": null,
-  //   "profile": null,
-  //   "whatsAppStatus": null,
-  //   "whatsAppExpire": null,
-  //   "gallery": [],
-  //   "otp": "1234",
-  //   "created_at": "2025-12-03T06:51:33.193Z"
-  // };
-
-  // const reviews = [
-  //   {
-  //     user: "Amit",
-  //     rating: 5,
-  //     review:
-  //       "She was mind blowing...too good...accurate predictions...one of the best astrologer in this platform...highly recommended.",
-  //     reply: "Thank you so much Amit",
-  //   },
-  //   {
-  //     user: "Amit",
-  //     rating: 5,
-  //     review:
-  //       "She was mind blowing...too good...accurate predictions...one of the best astrologer in this platform...highly recommended.",
-  //     reply: "Thank you so much Amit",
-  //   },
-  //   {
-  //     user: "Amit",
-  //     rating: 4,
-  //     review:
-  //       "She was mind blowing...too good...accurate predictions...one of the best astrologer in this platform...highly recommended.",
-  //     reply: "Thank you so much Amit",
-  //   },
-  // ];
-
   const gifts = [
     { name: "Flowers", price: "₹15", img: require("../../assets/images/Gift1.png") },
     { name: "Pooja Thali", price: "₹21", img: require("../../assets/images/Gift2.png") },
@@ -520,7 +462,7 @@ const styles = StyleSheet.create({
 ribbon: {
   width: 110,                       // long enough to cross the corner
   paddingVertical: 2,
-  backgroundColor: "#000",       // same golden color
+  backgroundColor: colors.primaryColor,       // same golden color
   transform: [{ rotate: "-45deg" }],// angle like screenshot
   justifyContent: "center",
   alignItems: "center",
@@ -715,7 +657,7 @@ ribbonText: {
   rechargeBtn: {
     flex: 1,
     height: 48,
-    backgroundColor: "#FFDD00", // Solid Yellow (like screenshot)
+    backgroundColor: colors.primaryColor, // Solid Yellow (like screenshot)
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",

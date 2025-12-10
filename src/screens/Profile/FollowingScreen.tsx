@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
 ribbon: {
   width: 110,                       // long enough to cross the corner
   paddingVertical: 2,
-  backgroundColor: "#000",       // same golden color
+  backgroundColor: colors.primaryColor,       // same golden color
   transform: [{ rotate: "-45deg" }],// angle like screenshot
   justifyContent: "center",
   alignItems: "center",

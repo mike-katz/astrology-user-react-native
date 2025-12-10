@@ -8,6 +8,7 @@ import {
   Pressable
 } from 'react-native';
 import DatePicker from 'react-native-date-picker';
+import { colors, Fonts } from '../styles';
 
 export default function TimePickerDialog({ visible, onClose, onApply }:any) {
 const [birthDate, setBirthDate] = useState<Date|null>(new Date());
@@ -15,7 +16,7 @@ const [birthDate, setBirthDate] = useState<Date|null>(new Date());
     <Modal transparent visible={visible} animationType="fade">
         <View style={styles.backdrop}>
             <View style={styles.modalBox}>
-                <Text style={styles.title}>Time Picker</Text>
+                <Text style={styles.title}>Select time</Text>
 
                 {/* Most Helpful */}
                  <View style={{justifyContent:'center',alignItems:'center'}}>
@@ -42,7 +43,7 @@ const [birthDate, setBirthDate] = useState<Date|null>(new Date());
                     onClose();
                     }}
                 >
-                    <Text style={styles.applyTxt}>Apply</Text>
+                    <Text style={styles.applyTxt}>Confirm</Text>
                 </TouchableOpacity>
                 </View>
             </View>
@@ -69,7 +70,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     textAlign: "center",
-    marginBottom: 18
+    marginBottom: 18,
+    fontFamily:Fonts.SemiBold
   },
   optionRow: {
     flexDirection: "row",
@@ -82,7 +84,7 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 50,
     borderWidth: 2,
-    borderColor: "#FFC700",
+    borderColor: colors.primaryColor,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 14
@@ -91,11 +93,12 @@ const styles = StyleSheet.create({
     width: 11,
     height: 11,
     borderRadius: 50,
-    backgroundColor: "#FFC700"
+    backgroundColor: colors.primaryColor
   },
   optionText: {
     fontSize: 16,
-    color: "#111"
+    color: "#111",
+    fontFamily:Fonts.Medium
   },
   btnRow: {
     flexDirection: "row",
@@ -113,17 +116,19 @@ const styles = StyleSheet.create({
     width: "45%",
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: "#FFC700",
+    backgroundColor: colors.primaryColor,
     alignItems: "center"
   },
   cancelTxt: {
     color: "#777",
     fontSize: 16,
-    fontWeight: "600"
+    fontWeight: "600",
+    fontFamily:Fonts.Medium
   },
   applyTxt: {
     color: "#111",
     fontSize: 16,
-    fontWeight: "700"
+    fontWeight: "700",
+    fontFamily:Fonts.Medium
   }
 });

@@ -2,7 +2,7 @@ import * as React from "react"
 import Svg, { SvgProps, Path } from "react-native-svg"
 const SvgComponent = ({width=33, height=33,...props}) => (
   <Svg
- width={width}
+    width={width}
     height={height}
     fill="none"
     {...props}

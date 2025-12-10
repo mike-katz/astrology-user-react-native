@@ -17,6 +17,7 @@ import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import { colors, Fonts } from "../../styles";
 import { getOrderList } from "../../redux/actions/UserActions";
 import moment from "moment";
+import { BackIcon } from "../../assets/icons";
 const { width } = Dimensions.get("window");
 
 // Example single item (replace with real data)
@@ -169,17 +170,17 @@ export default function OrderHistoryScreen() {
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={handleBack}>
-          <Feather name="arrow-left" size={20} color="#222" />
-        </TouchableOpacity>
+                    <View style={styles.header}>
+                        <View style={styles.left}>
+                                <TouchableOpacity onPress={() => navigation.goBack()}>
+                                <BackIcon size={16} tintColor={undefined} onPress={() => navigation.goBack()} />
+                                </TouchableOpacity>
+                            </View>
 
-        <Text style={styles.headerTitle}>Order History</Text>
+                            <Text style={styles.headerTitle}>Order History</Text>
 
-        <TouchableOpacity style={[styles.iconBtn,{display:'none'}]} onPress={() => { /* search action */ }}>
-          <Feather name="search" size={20} color="#222" />
-        </TouchableOpacity>
-      </View>
+                            <View style={styles.rightp} /> 
+                    </View>
 
       {/* Tabs */}
       <View style={styles.tabs}>
@@ -232,7 +233,7 @@ export default function OrderHistoryScreen() {
             activeWalletTab === 'payment' && styles.paymentActiveBtn
             ]} onPress={()=>setWalletActiveTab('payment')}
             >
-                <Text style={[styles.paymentInactiveText, activeWalletTab === 'payment' && styles.paymentInactiveText]}>Payment Logs</Text>
+                <Text style={[styles.paymentInactiveText, activeWalletTab === 'payment' && styles.paymentActiveText]}>Payment Logs</Text>
             </TouchableOpacity>
             </View>
 
@@ -330,29 +331,32 @@ export default function OrderHistoryScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
 
-  header: {
-    height: 62,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    borderBottomWidth: 0.3,
-    borderColor: "#E7E7E7",
-    backgroundColor: "#fff",
-  },
-  iconBtn: {
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#111",
-    fontFamily:Fonts.Medium
-  },
+header: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  paddingHorizontal: 8,
+  paddingVertical: 12,
+  backgroundColor: "#fff",
+  borderBottomColor: "gray",
+  borderBottomWidth: 0.4,
+},
+left: {
+  width: 40,
+  justifyContent: "center",
+  alignItems: "flex-start",
+},
+rightp: {
+  width: 40, // 👈 same size as left for perfect center
+},
+headerTitle: {
+  fontSize: 20,
+  fontWeight: "600",
+  fontFamily: Fonts.Medium,
+  textAlign: "center",
+  flex: 1, // 👈 takes remaining middle space
+},
+
 
   tabs: {
     flexDirection: "row",

@@ -6,7 +6,7 @@ import OrderHistoryIcon from '../../assets/icons/OrderHistoryIcon';
 import { useNavigation } from '@react-navigation/native';
 import { BackIcon } from '../../assets/icons';
 import ShareIcon from '../../assets/icons/ShareIcon';
-import { Fonts } from '../../styles';
+import { colors, Fonts } from '../../styles';
 import ChatWhiteIcon from '../../assets/icons/ChatWhiteIcon';
 
 const WebviewScreen = ({route}:any) => {
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
 
     floatingBtn: {
         flexDirection: "row",
-        backgroundColor: "#FBB917",
+        backgroundColor: colors.primaryColor,
         width: "92%",
         paddingVertical: 15,
         borderRadius: 40,

@@ -5,7 +5,7 @@ import { BackIcon } from "../../assets/icons";
 import Feather from "react-native-vector-icons/Feather";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
-import { Fonts } from "../../styles";
+import { colors, Fonts } from "../../styles";
 import { ServiceConstants } from "../../services/ServiceConstants";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
 
   rechargeBtn: {
     marginLeft: "auto",
-    backgroundColor: "#F4C900",
+    backgroundColor: colors.primaryColor,
     paddingHorizontal: 15,
     paddingVertical: 6,
     borderRadius: 8,

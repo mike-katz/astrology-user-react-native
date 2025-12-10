@@ -114,7 +114,7 @@ profileWrapper: {
     borderRadius: 35 / 2,
     backgroundColor: '#FFFAE6',        // light yellow fill
     borderWidth: 2,
-    borderColor: '#FBB917',           // yellow border
+    borderColor: colors.primaryColor,           // yellow border
     alignItems: 'center',
     justifyContent: 'center',
   },

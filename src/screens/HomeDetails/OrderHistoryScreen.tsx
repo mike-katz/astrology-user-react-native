@@ -118,6 +118,7 @@ export default function OrderHistoryScreen() {
         if (result.data.results.length === 0 || result.data.results.length < 20) {
           setLoadingMore(false);
         }
+        setRefreshing(false);
         // Append not replace
         setOrders(prev => [...prev, ...(result.data.results)]);
       });
@@ -127,9 +128,13 @@ export default function OrderHistoryScreen() {
       setRefreshing(true);
       setOrders([]);
       setTimeout(() => {
-        setPage(1);
+        if(page===1){
+          callOrderListApi();
+        }else{
+          setPage(1);
+        }
         setRefreshing(false);
-      }, 900);
+      }, 0);
     }, []);
 
     const loadMore = () => {
@@ -146,7 +151,9 @@ export default function OrderHistoryScreen() {
   const renderItem = ({ item }: any) => {
     const formatted = moment(item.created_at).format("DD-MMM-YYYY");
     return(
-    <TouchableOpacity style={styles.row}>
+    <TouchableOpacity style={styles.row} onPress={()=>{
+      navigation.push('ChatWindow', { astrologerId:item.panditId,orderId:item.orderId }); 
+    }}>
       <View style={styles.avatarWrap}>
         <FastImage style={styles.avatar} source={{ uri: item.profile }} />
         {item.online && <View style={styles.onlineDot} />}

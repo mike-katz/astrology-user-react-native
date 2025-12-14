@@ -173,11 +173,11 @@ export const getPanditReviewList = async (panditId:any,pagenum:any) => {
   return result;
 };
 
-export const getPanditChatMessages = async (panditId:any,pagenum:any) => {
+export const getPanditChatMessages = async (orderId:any,pagenum:any) => {
   const body: any = {};
-   body['panditId'] = panditId;
+   body['orderId'] = orderId;
    body['page'] = pagenum;
-   body['limit'] = 100;
+   body['limit'] = 20;
   const response = await getRequest({
     url: Apis.getChatMessages,
     header: headerWithBearer(),
@@ -185,6 +185,40 @@ export const getPanditChatMessages = async (panditId:any,pagenum:any) => {
   });
   const result = response;
   return result;
+};
+
+
+
+export const getChatDetails = async (panditId:any) => {
+  const body: any = {};
+  body['panditId'] = panditId;
+  const response = await getRequest({
+    url: Apis.getChatDetails,
+    header: headerWithBearer(),
+    body,
+  });
+  const result = response;
+  if(result.success == true){
+    return result;
+  } else {
+    return result;
+  }
+  return null;
+};
+
+export const sendMessageApi = async (userId: any,message:string,orderId:any) => {
+  const body: any = {};
+  // body['userId'] = userId;
+  body['message'] = message;
+  body['orderId'] = orderId;
+  const response = await postRequest({ body, url:Apis.sendMessage });
+    const result = JSON.parse(response);
+    if(result.success == true){
+        return response;
+    }else{
+      return response;
+    }
+  return null;
 };
 
 export const createOrderApi = async (panditID: any,type:string) => {

@@ -26,6 +26,23 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+
+	<!-- Permissions -->
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera for AR features.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library for media upload.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need permission to save media to your gallery.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to show location-based AR content.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need background location access for enhanced AR services.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We use your location to show content based on your area.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>We use your data to personalize the app experience.</string>
+	
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

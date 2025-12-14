@@ -14,6 +14,7 @@ import {
     Share,
     useColorScheme,
     ImageBackground,
+    Alert,
 } from "react-native";
 import FastImage from "react-native-fast-image";
 import Feather from "react-native-vector-icons/Feather";
@@ -30,24 +31,27 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { StarRating } from "../../constant/Helper";
 import { AppSpinner } from "../../utils/AppSpinner";
-import { createOrderApi, getPanditChatMessages } from "../../redux/actions/UserActions";
+import { createOrderApi, getChatDetails, getPanditChatMessages, sendMessageApi } from "../../redux/actions/UserActions";
 import moment from "moment";
+import { ServiceConstants } from "../../services/ServiceConstants";
+import { decryptData, secretKey } from "../../services/requests";
+import { CustomDialogManager2 } from "../../utils/CustomDialog2";
 const { width } = Dimensions.get("window");
 
 
 type Message = {
     id: string;
-    sender:string;
+    sender_type:string;
     message:string;
     created_at:string;
 };
 
 export default function ChatWindow({route}:any) {
-    const { astrologerId } = route.params;
+    const { astrologerId ,orderId} = route.params;
     const navigation = useNavigation<any>();
      const colorScheme = useColorScheme();
     const [isConnected, setIsConnected] = useState(false);
-    const [transport, setTransport] = useState('N/A');
+    const [isOnline, setIsOnline] = useState(false);
     const [showRateModal, setShowRateModal] = useState(false);
     const [text, setText] = useState("");
     const flatRef = useRef<FlatList>(null);
@@ -55,99 +59,256 @@ export default function ChatWindow({route}:any) {
     const userDetailsData = useSelector((state: RootState) => state.userDetails.userDetails);
     const [messages1, setMessages1] = useState<any[]>([]);
     const [refreshing, setRefreshing] = useState(false);
+     const [loadingMore, setLoadingMore] = useState(false);
     const [page, setPage] = useState(1);
     const [activity, setActivity] = useState<boolean>(false);
     const BG = require("../../assets/images/chat_pattern_bg.png");
     const [ratingStar, setRatingStar] = useState(0);
     const [message, setMessage] = useState("");
+    const [panditName, setPanditName] = useState("Astrologer");
     const link_web  = 'https://astrotalkguruji.store';
-    const avatarUri =
-        "https://d1gcna0o0ldu5v.cloudfront.net/fit-in/135x135/images/77fb9922-d879-4e6c-b981-bb50813cf5c9.jpg"; // replace with your avatar or astrologer image
+     const [avatarUri, setAvatarUri] = useState("");
+    // const avatarUri =
+    //     "https://d1gcna0o0ldu5v.cloudfront.net/fit-in/135x135/images/77fb9922-d879-4e6c-b981-bb50813cf5c9.jpg"; // replace with your avatar or astrologer image
+
+    const [typingUser, setTypingUser] = useState(false);    
 
 
+const loadMore = () => {
+    if (!loadingMore) {
+      setPage(prev => prev + 1);
+    }
+  };
   useEffect(() => {
     callChatMessagesApi();
   }, [page]);
 
     const callChatMessagesApi = () => {
       setActivity(false);
-      getPanditChatMessages(astrologerId,page).then(response => {
+      getPanditChatMessages(orderId,page).then(response => {
         setActivity(false);
-        console.log("Chat Messages response ==>" +response);
+        console.log("Chat Messages response ==>" +(response)+"page no:-"+page);
         const result = JSON.parse(response);
-        if(result.data.length > 0){
-            const messages = JSON.parse(result.data[0].message);
-            console.log("Chat Messages response ==>" +JSON.stringify(messages));
-            // if (result.data.results.length === 0) {
-            //   setLoadingMore(false);
-            // }
-            // Append not replace
-            // setMessages1(prev => [...prev, ...(messages)]);
-               // reverse if needed
-            setMessages1(prev => [...messages, ...prev]);
+        if(result.success===true){
+            const messages = (result.data.results);
+            if (messages.length == 0) {
+                console.log("Chat Messages lenght ==>" +messages.length);
+              setLoadingMore(false);
+            }
+            // setMessages1(prev => [...messages, ...prev]);
+            setMessages1(prev => [...prev,...messages]);
+        }else if(result.success===false){
+            const result2 = decryptData(result.error,secretKey);
+            const result3 = JSON.parse(result2);
+            console.log("Chat Messages Error response ==>" +JSON.stringify(result3));
+            CustomDialogManager2.show({
+                title: 'Alert',
+                message: result3.message,
+                type:2,
+                buttons: [
+                    {
+                    text: 'Ok',
+                    onPress: () => {
+                        
+                    },
+                    style: 'default',
+                    },
+                ],
+                });
+               
         }
 
       });
     }
 
-    const createOrderChatApi=()=>{
-        createOrderApi(astrologerId,"chat").then(response => {
+  useEffect(() => {
+    callChatDetailsApi();
+  }, []);
+
+  const callChatDetailsApi = () =>{
+        getChatDetails(astrologerId).then(response => {
         setActivity(false);
-        console.log("Create Order response ==>" +response);
+        console.log("Chat Details response ==>" +(response));
         const result = JSON.parse(response);
+        if(result.success===true){
+          console.log("Chat Details response222 ==>" +JSON.stringify(result));
+          setAvatarUri(result.data.profile);
+          setPanditName(result.data.name);
+          setIsOnline(result.data.isOnline);
+        }else if(result.success===false){
+            const result2 = decryptData(result.error,secretKey);
+            const result3 = JSON.parse(result2);
+            CustomDialogManager2.show({
+                title: 'Alert',
+                message: result3.message,
+                type:2,
+                buttons: [
+                    {
+                    text: 'Ok',
+                    onPress: () => {
+                        
+                    },
+                    style: 'default',
+                    },
+                ],
+                });
+               
+        }
+
+      });
+  }
+
+    const callSendMessagesApi = () => {
+      sendMessageApi(ServiceConstants.User_ID,text,orderId).then(response => {
+        setActivity(false);
+        console.log("Send Messages response ==>" +response);
+        const result = JSON.parse(response);
+        if(result.success===true){
+            console.log("Send Messages response ==>" +JSON.stringify(result));
+            sendMessage();
+        }else if(result.success===false){
+            const result2 = decryptData(result.error,secretKey);
+            const result3 = JSON.parse(result2);
+            console.log("Send Messages Error response ==>" +JSON.stringify(result3));
+            CustomDialogManager2.show({
+                title: 'Alert',
+                message: result3.error,
+                type:2,
+                buttons: [
+                    {
+                    text: 'Ok',
+                    onPress: () => {
+                        
+                    },
+                    style: 'default',
+                    },
+                ],
+                });
+               
+        }
       });
     }
-    
+
     const endOrderChatApi=()=>{
-        createOrderApi(astrologerId,"chat").then(response => {
-        setActivity(false);
-        console.log("Create Order response ==>" +response);
-        const result = JSON.parse(response);
-      });
+
     }
 
         useEffect(() => {
             if (socket.connected) {
-            onConnect();
+                onConnect();
             }
-
             function onConnect() {
                     setIsConnected(true);
-                    setTransport(socket.io.engine.transport.name);
-
-                    socket.io.engine.on('upgrade', (transport) => {
-                        setTransport(transport.name);
-                    });
+                    console.log('socket connected', socket.id);
+                    // socket.emit('join_chat', {
+                    //     orderId,
+                    //     id: ServiceConstants.User_ID,
+                    //     role: 'user'
+                    // });
+                    socket.emit(`go_online`, {orderId:orderId, from_id:ServiceConstants.User_ID,to_id:astrologerId, type:"user" });
             }
 
             function onDisconnect() {
                 setIsConnected(false);
-                setTransport('N/A');
+                console.log('socket disconnected', socket.id);
             }
 
             socket.on('connect', onConnect);
-            socket.on('disconnect', onDisconnect);
+            socket.on(`go_online`, (data) => {
+                console.log("go online--"+JSON.stringify(data));
+            });
 
+            socket.on('online', (data) => {
+                setIsOnline(true);
+            });
+
+            socket.on('offline', (data) => {
+                setIsOnline(false);
+            });
+
+            // 1. go_online = {id, type}
+            // 2. ⁠typing = {from_type, from_id, to_type, to_id}
+            // 3. ⁠stop_typing = {from_type, from_id, to_type, to_id}
+
+            // socket.on(`typing`, (data) => setTypingUser(data.from_id || data.from));
+            socket.on(`typing`, (data) => setTypingUser(true));
+            socket.on(`stop_typing`, () => setTypingUser(false));
+            socket.on(`receive_message`, (msg) => {
+                console.log("receive message--"+JSON.stringify(msg));
+                     const newMsg: Message = {
+                        id: msg.id,
+                        sender_type:msg.sender_type,
+                        message:msg.message, 
+                        created_at:msg.created_at
+                    };
+                    setMessages1(prev => [newMsg, ...prev]);
+            });
+
+            socket.on('disconnect', onDisconnect);
+         
             return () => {
+                console.log('🔥 ChatWindow unmount → disconnect socket');
             socket.off('connect', onConnect);
             socket.off('disconnect', onDisconnect);
+            socket.off(`typing`);
+            socket.off(`stop_typing`);
+            socket.off(`receive_message`);
+            socket.off(`go_online`);
             };
         }, []);
 
+  // typing handlers
+  let typingTimer:any;
+  function handleTyping(val:any) {
+    setText(val);
+    if(!isConnected) return;
+      // STOP typing when input empty
+    if (!val.trim()) {
+        socket.emit(`stop_typing`, {
+        orderId:orderId,
+        // from_type: "user",
+        // from_id: ServiceConstants.User_ID,
+        // to_type: "pandit",
+        // to_id: astrologerId,
+        });
+        return;
+    }
+
+    socket.emit(`typing`, {
+        orderId:orderId,
+    //   from_type: "user", from_id:ServiceConstants.User_ID,
+    //   to_type: "pandit", to_id: astrologerId
+    });
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => {
+      socket.emit(`stop_typing`, {
+        orderId:orderId,
+        // from_type: "user", from_id: ServiceConstants.User_ID,
+        // to_type: "pandit", to_id:astrologerId
+      });
+    }, 5000);
+  }
 
 
     const sendMessage = useCallback(() => {
         if (!text.trim()) return;
-        const newMsg: Message = {
-            id: String(Date.now()),
-            sender:"user",
-            message:text.trim(), 
-            created_at:new Date().toISOString()
-        };
-        setMessages1((p) => [...p, newMsg])
+        // const ids = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+        // const newMsg: Message = {
+        //     id: ids,
+        //     sender_type:"user",
+        //     message:text.trim(), 
+        //     created_at:new Date().toISOString()
+        // };
+        
+        // setMessages1(prev => [newMsg, ...prev]);
         setText("");
         // scroll to end
-        setTimeout(() => flatRef.current?.scrollToEnd({ animated: true }), 100);
+        setTimeout(() => {
+            flatRef.current?.scrollToOffset({
+                offset: 0,
+                animated: true,
+            });
+            }, 100);
     }, [text]);
 
     const endChat = () => {
@@ -156,30 +317,27 @@ export default function ChatWindow({route}:any) {
             ...p,
             {
                 id: String(Date.now()),
-                sender:"system",
+                sender_type:"system",
                 message: "You ended the chat", 
                 created_at:new Date().toISOString()
             } as any,
         ])
     };
     const startChat = () => {
-  setIsChatEnded(false);
-  createOrderChatApi();
+          setIsChatEnded(false);
           setMessages1(prev => [
             ...prev,
             {
                 id: String(Date.now()),
-                sender:"system",
+                sender_type:"system",
                 message: "You started the chat", 
                 created_at:new Date().toISOString()
             } as any,
-  ])
-
-  setTimeout(() => flatRef.current?.scrollToEnd({ animated: true }), 100);
+    ]);
 };
 
     const renderMessage = ({ item }: { item: Message }) => {
-        if ((item as any).sender === "system") {
+        if ((item as any).sender_type === "system") {
             const formatted = moment(new Date()).format("HH:mm");
             return (
                 <View style={styles.systemRow}>
@@ -189,9 +347,7 @@ export default function ChatWindow({route}:any) {
             );
         }
 
-        const isUser = item.sender === "user"
-        console.log("Created at ---"+item.created_at);
-
+        const isUser = item.sender_type === "user"
         const formatted = moment(item.created_at).format("HH:mm");
         return (
             <View style={[styles.msgRow, isUser ? styles.rowRight : styles.rowLeft]}>
@@ -232,16 +388,17 @@ export default function ChatWindow({route}:any) {
     }
 
     const handleBack = () => {
+        
+     socket.emit(`go_offline`, {
+        orderId:orderId,
+        // from_type: "user", from_id: ServiceConstants.User_ID,
+        // to_type: "pandit", to_id:astrologerId
+      });
         navigation.goBack();
     }
     const onEdit = () =>{
         setShowRateModal(true);
     }
-
-    useEffect(() => {
-    flatRef.current?.scrollToEnd({ animated: true });
-    }, [messages1]);
-
 
     const onSubmitRating = (data: any) => {
         console.log("Review Data → ", data);
@@ -270,8 +427,8 @@ export default function ChatWindow({route}:any) {
                         </TouchableOpacity>
 
                         <View style={styles.headerTitle}>
-                            <Text style={styles.headerName}>Astrologer</Text>
-                            <Text style={styles.headerStatus}>Offline</Text>
+                            <Text style={styles.headerName}>{panditName}</Text>
+                            <Text style={styles.headerStatus}>{isOnline?"Online":"Offline"}</Text>
                         </View>
                         <View style={{flexDirection:'row',justifyContent:'center',alignItems:'center'}}>
                         <TouchableOpacity onPress={() => { }} style={{width:30,height:30,padding: 0,justifyContent:'center'}}>
@@ -295,15 +452,18 @@ export default function ChatWindow({route}:any) {
                         <FlatList
                             ref={flatRef}
                             data={messages1}
-                            keyExtractor={(i) => i.id}
+                            keyExtractor={(item, index) => `${item.id}-${index}`}
                             renderItem={renderMessage}
                             contentContainerStyle={styles.chatContent}
                             showsVerticalScrollIndicator={false}
                             inverted
-                            maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
+                            onEndReached={loadMore}
+                            onEndReachedThreshold={0.4}
+                            ListFooterComponent={() => (loadingMore ? <View style={styles.loadingMore}><Text>Loading...</Text></View> : null)}
                         />
 
                         <Text>Status: { isConnected ? 'connected' : 'disconnected' }</Text>
+                        {typingUser && <Text>Typing...</Text>}
                         {/* <Text>Transport: { transport }</Text> */}
 
                         {/* Share row (centered) */}
@@ -334,7 +494,7 @@ export default function ChatWindow({route}:any) {
                             <FastImage source={{ uri: avatarUri }} style={styles.promoAvatar} />
                             <View style={styles.promoBody}>
                                 <Text style={styles.promoText}>
-                                    "Hi User, lets continue this chat at discounted price of{" "}
+                                    "Hi {userDetailsData.name || "User"}, lets continue this chat at discounted price of{" "}
                                     <Text style={styles.promoPrice}>₹ 5/min</Text>{" "}
                                     <Text style={styles.promoOld}>₹ 38/min</Text>"
                                 </Text>
@@ -357,7 +517,10 @@ export default function ChatWindow({route}:any) {
                         <View style={styles.inputBox}>
                             <TextInput
                                 value={text}
-                                onChangeText={setText}
+                                onChangeText={(val)=>{
+                                    setText(val);
+                                    handleTyping(val);
+                                }}
                                 placeholder="Write a message..."
                                 style={styles.input}
                                 multiline
@@ -367,7 +530,9 @@ export default function ChatWindow({route}:any) {
                         </View>
 
                         <View style={styles.inputRight}>
-                            <TouchableOpacity  onPress={sendMessage}
+                            <TouchableOpacity  onPress={()=>{
+                                callSendMessagesApi();
+                            }}
                               disabled={isChatEnded}
                               style={[styles.sendBtn, { opacity: isChatEnded ? 0.4 : 1 }]}>
                                 <Feather name="send" size={18} color="#fff" />
@@ -564,4 +729,5 @@ const styles = StyleSheet.create({
         borderRadius: 20,
     },
     endBtnText: { color: "#D23B3B", fontWeight: "700" },
+    loadingMore: { padding: 16, alignItems: 'center', justifyContent: 'center' },
 });

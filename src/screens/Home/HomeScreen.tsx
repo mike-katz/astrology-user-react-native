@@ -37,13 +37,15 @@ import CallWhiteIcon from '../../assets/icons/CallWhiteIcon';
 import Feather from 'react-native-vector-icons/Feather';
 import FastImage from 'react-native-fast-image';
 import { SlideMenu } from './SlideMenu';
-import { getPandit, getUserDetails } from '../../redux/actions/UserActions';
+import { createOrderApi, getPandit, getUserDetails } from '../../redux/actions/UserActions';
 import { AppSpinner } from '../../utils/AppSpinner';
 import WalletBottomSheet from '../Payment/WalletBottomSheet';
 import { ServiceConstants } from '../../services/ServiceConstants';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { setUserDetails } from '../../redux/slices/userDetailsSlice';
+import { CustomDialogManager2 } from '../../utils/CustomDialog2';
+import { decryptData, secretKey } from '../../services/requests';
 
 const features = [
   {id: 1, title: 'Daily Horoscope', icon: DailyHoroIcon },
@@ -99,6 +101,45 @@ const callPanditApi = () => {
     setAstrologers(result.data.results);
   });
 }
+
+    const createOrderChatApi=(astrologerId:any)=>{
+        createOrderApi(astrologerId,"chat").then(response => {
+        setActivity(false);
+        console.log("Create Order response ==>" +response);
+        const result = JSON.parse(response);
+        console.log("Create Order response222 ==>" +JSON.stringify(result.success));
+        if(result.success===true){
+          navigation.push('ChatWindow', { astrologerId: astrologerId,orderId:result.data.orderId }); 
+        }else{
+            const result2 = decryptData(result.error,secretKey);
+            const result3 = JSON.parse(result2);
+            console.log("Create Messages Error response ==>" +JSON.stringify(result3));
+          
+            CustomDialogManager2.show({
+                title: 'Alert',
+                message: result3.message,
+                type:2,
+                buttons: [
+                  {
+                    text: 'Ok',
+                    onPress: () => {
+                        if(ServiceConstants.User_ID==null){
+                          navigation.reset({
+                                        index: 0,
+                                        routes: [{ name: 'AuthStack' }]
+                                      });
+                        }else{
+                          navigation.push("OrderHistoryScreen");
+                        }         
+                    },
+                    style: 'default',
+                  },
+                ],
+              });
+        }
+        
+      });
+    }
 
   const getUserDetailsApi = () => {
     setActivity(false)
@@ -251,7 +292,8 @@ const callPanditApi = () => {
                               routes: [{ name: 'AuthStack' }]
                             });
               }else{
-                  navigation.push('ChatWindow', { astrologerId: item.id }); 
+                createOrderChatApi(item.id);
+                  // navigation.push('ChatWindow', { astrologerId: item.id }); 
               }
               
               // if(walletBalance==0){

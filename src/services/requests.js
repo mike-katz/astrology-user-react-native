@@ -16,11 +16,11 @@ const showLog = (url, Status, method, header, body, res) => {
   console.log('\x1b[33m%s\x1b[0m', '\n---------Fetch Request Ended---------\n');
 };
 
-const secretKey = "Va5jzgoprjdz0AbeEMG9uP0JL";
-const encryptData = (text, secretKey) => {
+export const secretKey = "Va5jzgoprjdz0AbeEMG9uP0JL";
+export const encryptData = (text, secretKey) => {
   return CryptoJS.AES.encrypt(text, secretKey).toString();
 };
-const decryptData = (cipherText, secretKey) => {
+export const decryptData = (cipherText, secretKey) => {
   const bytes = CryptoJS.AES.decrypt(cipherText, secretKey);
   return bytes.toString(CryptoJS.enc.Utf8);
 };
@@ -48,7 +48,7 @@ export const getRequest = async ({ header = headerWithBearer(),body, url ,method
       url = `${url}payload=${payload}`; 
         console.log("GET REQUEST URL →", url,header,method,body);
     }
-    
+     console.log("GET REQUEST URL →", url,header,method,body);
   return axios({
   url,
   method,
@@ -69,11 +69,11 @@ export const getRequest = async ({ header = headerWithBearer(),body, url ,method
       console.log("HTTP STATUS →", error.response.status);   // e.g., 400
       console.log("SERVER RESPONSE →", error.response.data); // full body
       console.log("HEADERS →", error.response.headers);
-      return decryptData(error.response,secretKey);
+      return JSON.stringify(error.response.data);
     } else {
       // NO response = network error
       console.log("NETWORK ERROR →", error.message);
-      return decryptData(error.message,secretKey);
+      return JSON.stringify(error.message);
     }
     return error;
   });
@@ -90,6 +90,7 @@ export const postRequest = async ({ header = headerWithBearer(), body, url, meth
     const encryptedPayload = {
       payload: encryptData(JSON.stringify(body), secretKey),
     };
+    console.log("POST REQUEST URL →", url,header,method,body);
   return axios({
   url,
   method,
@@ -110,12 +111,13 @@ export const postRequest = async ({ header = headerWithBearer(), body, url, meth
       console.log("HTTP STATUS →", error.response.status);   // e.g., 400
       console.log("SERVER RESPONSE →", error.response.data); // full body
       console.log("HEADERS →", error.response.headers);
+      return JSON.stringify(error.response.data);
     } else {
       // NO response = network error
       console.log("NETWORK ERROR →", error.message);
+      return JSON.stringify(error.message);
     }
-    const resultError = decryptData(error.response.data.error,secretKey);
-    return resultError;
+    return error;
   });
     
   } catch (error) {

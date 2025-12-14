@@ -42,6 +42,8 @@
 	<string>We use your location to show content based on your area.</string>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>We use your data to personalize the app experience.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Allow access to microphone for sending voice messages</string>
 	
 	<key>NSAppTransportSecurity</key>
 	<dict>

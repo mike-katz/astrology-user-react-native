@@ -18,7 +18,7 @@ const showLog = (url, Status, method, header, body, res) => {
 
 export const secretKey = "Va5jzgoprjdz0AbeEMG9uP0JL";
 export const encryptData = (text, secretKey) => {
-  return CryptoJS.AES.encrypt(text, secretKey).toString();
+  return encodeURIComponent(CryptoJS.AES.encrypt(text, secretKey).toString());
 };
 export const decryptData = (cipherText, secretKey) => {
   const bytes = CryptoJS.AES.decrypt(cipherText, secretKey);
@@ -44,7 +44,7 @@ export const getRequest = async ({ header = headerWithBearer(),body, url ,method
     if (Object.keys(body)?.length > 0) {
       const encrypted = encryptData(JSON.stringify(body), secretKey);
       // convert to string before attach to URL
-      const payload = encodeURIComponent(encrypted);
+      const payload = (encrypted);
       url = `${url}payload=${payload}`; 
         console.log("GET REQUEST URL →", url,header,method,body);
     }
@@ -160,25 +160,41 @@ export const postRequest = async ({ header = headerWithBearer(), body, url, meth
 //   }
 // };
 
-export const postMultiPartRequest = async ({ header = headerBearerMultiPart(), body, url }) => {
+export const postMultiPartRequest = async ({ header = headerBearerMultiPart(), body, url ,method = 'post'}) => {
   try {
-    // const controller = new AbortController();
-    // setTimeout(() => controller.abort(), 15000);
-    const response = await fetch(url, {
-      method: 'post',
-      headers: header,
-      body,
-      // signal: controller.signal
-    });
-    console.log(response);
-
-    const result = await response.json();
-    showLog(url, response.status, header, 'POST', body, result);
-    if (response.status == 401) {
-      return authError();
+    
+  console.log("POST Multiple Part REQUEST URL →", url,header,method,body);
+  return axios({
+  url,
+  method,
+  headers: header,
+  data: body,
+  timeout: 40000,
+}).then((res) => {
+    showLog(url, res.status, method, header, body, res.data);
+    const result2 = decryptData(res.data.data,secretKey);
+    console.log("AXIOS SUCCESS →", result2);
+    return result2;
+  }).catch((error) => {
+    console.log("RAW AXIOS ERROR →", error);
+      if (error.response.status == 401) {
+        return authError();
+      }
+    if (error.response) {
+      console.log("HTTP STATUS →", error.response.status);   // e.g., 400
+      console.log("SERVER RESPONSE →", error.response.data); // full body
+      console.log("HEADERS →", error.response.headers);
+      return JSON.stringify(error.response.data);
+    } else {
+      // NO response = network error
+      console.log("NETWORK ERROR →", error.message);
+      return JSON.stringify(error.message);
     }
+    return error;
+  });
 
-    return result;
+
+
   } catch (e) {
     if (e.message == 'Aborted') {
       alert('Service Time Out 5 sec');

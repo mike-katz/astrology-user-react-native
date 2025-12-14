@@ -29,6 +29,15 @@ end
   node_require('react-native/scripts/react_native_pods.rb')
 node_require('react-native-permissions/scripts/setup.rb')
 
+  setup_permissions([
+    'Camera',
+    'PhotoLibrary',
+    'PhotoLibraryAddOnly',
+    'LocationWhenInUse',
+    'Notifications',
+    'Microphone'
+  ])
+
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.

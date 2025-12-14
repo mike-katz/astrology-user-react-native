@@ -206,12 +206,28 @@ export const getChatDetails = async (panditId:any) => {
   return null;
 };
 
-export const sendMessageApi = async (userId: any,message:string,orderId:any) => {
-  const body: any = {};
-  // body['userId'] = userId;
-  body['message'] = message;
-  body['orderId'] = orderId;
-  const response = await postRequest({ body, url:Apis.sendMessage });
+export const sendMessageApi = async (files: any,message:string,orderId:any,isImage:any) => {
+  const body = new FormData();
+  body.append('orderId', orderId);
+  if (isImage) {
+    // body.append('message', files);
+  files.forEach((img: any, index: number) => {
+    body.append('message', {
+      uri: img.uri, // or img.uri if using expo
+      name: img.name || `image_${index}.jpg`,
+      type: img.type || 'image/jpeg',
+    } as any);
+  });
+    body.append('type', "image");
+  }else{
+    body.append('message', message);
+    body.append('type', "text");
+  }
+    const response = await postMultiPartRequest({
+      header: headerBearerMultiPart(),
+      body: body,
+      url: Apis.sendMessage,
+    });
     const result = JSON.parse(response);
     if(result.success == true){
         return response;

@@ -26,6 +26,8 @@ export const Apis = {
   getOrderList:`${BASE_URL}order/list?`,
   sendMessage:`${BASE_URL}chat/sendMessage`,
   getChatDetails: `${BASE_URL}chat/getDetail?`,
+  chatAcceptOrder:`${BASE_URL}order/acceptOrder`,
+  chatCancelOrder:`${BASE_URL}order/cancelOrder`,
 };
 
 export const Events = {};

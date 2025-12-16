@@ -11,6 +11,8 @@ import RNRestart from 'react-native-restart';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
+import { setUserDetails } from '../slices/userDetailsSlice';
+import { useDispatch } from 'react-redux';
 
 export const getResponse = (jsonResponse: any) => {
   if (jsonResponse) {
@@ -55,14 +57,15 @@ export const verifyOtp = async (data: any) => {
   body['otp'] = data.verifyOtp;
   const response = await postRequest({ body, url: Apis.verifyOtp });
     const result = JSON.parse(response);
+    console.log("VerifyOtp response==="+result);
     if(result.success == true){
         ServiceConstants.setBearerToken(result.data.token);
         ServiceConstants.User_ID = result.data.id;
-        // ServiceConstants.setUserReferralCode(result.data?.user.self_reffer);
         ServiceConstants.setUserphone(result.data.mobile);
+        // ServiceConstants.setUserReferralCode(result.data?.user.self_reffer);
         // await AsyncStorage.setItem('token',result.data?.access_token);
         // await AsyncStorage.setItem('isLoggedIn', 'true');
-        setAsyncUser(result.data.token);
+        setAsyncUser(result.data);
         return response;
     }else{
       return response;
@@ -250,6 +253,31 @@ export const createOrderApi = async (panditID: any,type:string) => {
     }
   return null;
 };
+export const chatAcceptOrderApi = async (orderId: any) => {
+  const body: any = {};
+  body['orderId'] = orderId;
+  const response = await postRequest({ body, url: Apis.chatAcceptOrder });
+    const result = JSON.parse(response);
+    if(result.success == true){
+        return response;
+    }else{
+      return response;
+    }
+  return null;
+};
+export const chatCancelOrderApi = async (orderId: any) => {
+  const body: any = {};
+  body['orderId'] = orderId;
+  const response = await postRequest({ body, url: Apis.chatCancelOrder});
+    const result = JSON.parse(response);
+    if(result.success == true){
+        return response;
+    }else{
+      return response;
+    }
+  return null;
+};
+
 export const getOrderList = async (pagenum:any) => {
   const body: any = {};
    body['page'] = pagenum;
@@ -284,10 +312,10 @@ export const asyncLoginAction = () => {
     .then((token: any) => {
       if (token) {
         const result = JSON.parse(token);
-        ServiceConstants.setBearerToken(result.access_token);
-        ServiceConstants.User_ID = result.user.id;
-        ServiceConstants.setUserReferralCode(result.user.self_reffer);
-        ServiceConstants.setUserphone(result.user.mobile_no);
+        console.log("App launch response ==="+JSON.stringify(result));
+        ServiceConstants.setBearerToken(result.token);
+        ServiceConstants.User_ID = result.id;
+        ServiceConstants.setUserphone(result.mobile);
         AsyncStorage.setItem('isLoggedIn', 'true');
       }
     })

@@ -27,7 +27,7 @@ import KundliMatchIcon from '../../assets/icons/KundliMatchIcon';
 import FreeChatIcon from '../../assets/icons/FreeChatIcon';
 import AstrologyBlogIcon from '../../assets/icons/AstrologyBlogIcon';
 import { colors, Fonts } from '../../styles';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import PrivateIcon from '../../assets/icons/PrivateIcon';
 import SearchIcon from '../../assets/icons/SearchIcon';
 import VerifiedIcon from '../../assets/icons/VerifiedIcon';
@@ -37,7 +37,7 @@ import CallWhiteIcon from '../../assets/icons/CallWhiteIcon';
 import Feather from 'react-native-vector-icons/Feather';
 import FastImage from 'react-native-fast-image';
 import { SlideMenu } from './SlideMenu';
-import { createOrderApi, getPandit, getUserDetails } from '../../redux/actions/UserActions';
+import { chatAcceptOrderApi, chatCancelOrderApi, createOrderApi, getPandit, getUserDetails } from '../../redux/actions/UserActions';
 import { AppSpinner } from '../../utils/AppSpinner';
 import WalletBottomSheet from '../Payment/WalletBottomSheet';
 import { ServiceConstants } from '../../services/ServiceConstants';
@@ -46,12 +46,35 @@ import { RootState } from '../../redux/store';
 import { setUserDetails } from '../../redux/slices/userDetailsSlice';
 import { CustomDialogManager2 } from '../../utils/CustomDialog2';
 import { decryptData, secretKey } from '../../services/requests';
+import { useSocket } from "../../socket/SocketProvider";
+import WaitlistJoinedModal from '../../utils/WaitlistJoinedModal';
+import { socket } from '../../../socket';
+import IncomingChatRequest from '../../utils/IncomingChatRequest';
+import IncomingChatModal from '../../utils/IncomingChatModal';
+import YellowWaitlistSheet from '../../utils/YellowWaitlistSheet';
 
 const features = [
   {id: 1, title: 'Daily Horoscope', icon: DailyHoroIcon },
   { id:2,title: 'Free Kundali', icon: FreeKundliIcon },
   {id:3, title: 'Kundali Matching', icon: KundliMatchIcon },
   { id:4,title: 'Free Chat', icon: FreeChatIcon },
+];
+
+const astrologers2 = [
+  {
+    id: "1",
+    name: "Naresh13",
+    waitTime: "15-31 mins",
+    price: "₹5/min",
+    image: "https://randomuser.me/api/portraits/men/32.jpg",
+  },
+  {
+    id: "2",
+    name: "Vaamika",
+    waitTime: "Wait time - Almost there!",
+    price: "₹23/min",
+    image: "https://randomuser.me/api/portraits/women/44.jpg",
+  },
 ];
 
 const remedies = [
@@ -85,10 +108,34 @@ const [selectedName, setSelectedName] = useState<string>("");
 const [walletBalance, setWalletBalance] = useState<number>(0);
  const userDetailsData = useSelector((state: RootState) => state.userDetails.userDetails);
  const [page, setPage] = useState(1); 
+ const [visibleWaitList, setVisibleWaitList] = useState<boolean>(false);
+ const [yellowWaitListV, setYellowWaitList] = useState<boolean>(true);
+ const [incomingVisible, setIncomingVisible] = useState(false);
+ const [panditAcceptedData, setPanditAcceptedData] = useState<any>([]);
+ const {isConnected, connectSocket } = useSocket();
 useEffect(() => {
   callPanditApi();
   if(ServiceConstants.User_ID!=null){
       getUserDetailsApi();
+  }
+}, []);
+
+useEffect(() => {
+  if(ServiceConstants.User_ID!=null){
+    //  Alert.alert("Home User Id is ...."+ServiceConstants.User_ID);
+     dispatch(setUserDetails({id:ServiceConstants.User_ID}));
+    socket.on(`wait_for_pandit`, (msg) => {
+        // Alert.alert("wait_for_pandit--" + JSON.stringify(msg));
+        setVisibleWaitList(true);
+    });
+    socket.on(`pandit_accepted`, (msg) => {
+         Alert.alert("pandit_accepted--" + JSON.stringify(msg));
+         if(visibleWaitList)
+        setVisibleWaitList(false);
+
+        setPanditAcceptedData(msg);
+        setIncomingVisible(true);
+    });
   }
 }, []);
 
@@ -109,7 +156,7 @@ const callPanditApi = () => {
         const result = JSON.parse(response);
         console.log("Create Order response222 ==>" +JSON.stringify(result.success));
         if(result.success===true){
-          navigation.push('ChatWindow', { astrologerId: astrologerId,orderId:result.data.orderId }); 
+          // navigation.push('ChatWindow', { astrologerId: astrologerId,orderId:result.data.orderId }); 
         }else{
             const result2 = decryptData(result.error,secretKey);
             const result3 = JSON.parse(result2);
@@ -148,8 +195,113 @@ const callPanditApi = () => {
       const result = JSON.parse(response);
       console.log("User Details Response:", result);
       dispatch(setUserDetails(result.data));
+      console.log("User Id is "+JSON.stringify(userDetailsData));
     });
   }
+
+      const callChatCancelApi=(chatOrderId:any)=>{
+        setActivity(true);
+        chatCancelOrderApi(chatOrderId).then(response => {
+        setActivity(false);
+        console.log("Cancel Order response ==>" +response);
+        const result = JSON.parse(response);
+        if(result.success===true){
+           console.log("Cancel Order Successfully ==>" +JSON.stringify(result));
+                CustomDialogManager2.show({
+                title: 'Alert',
+                message: "Your chat request has been canceled successfully.",
+                type:2,
+                buttons: [
+                  {
+                    text: 'Ok',
+                    onPress: () => {
+       
+                    },
+                    style: 'default',
+                  },
+                ],
+              });
+        }else{
+            const result2 = decryptData(result.error,secretKey);
+            const result3 = JSON.parse(result2);
+            console.log("Chat Cancel Order Error response ==>" +JSON.stringify(result3));
+            CustomDialogManager2.show({
+                title: 'Alert',
+                message: result3.message,
+                type:2,
+                buttons: [
+                  {
+                    text: 'Ok',
+                    onPress: () => {
+       
+                    },
+                    style: 'default',
+                  },
+                ],
+              });
+        }
+        
+      });
+    }
+      const callChatAcceptApi=(chatOrderId:any,panditId:any)=>{
+        setActivity(true);
+        chatAcceptOrderApi(chatOrderId).then(response => {
+        setActivity(false);
+        console.log("Accept Order response ==>" +response);
+        const result = JSON.parse(response);
+        if(result.success===true){
+           console.log("Accept Order Successfully ==>" +JSON.stringify(result));
+            navigation.push('ChatWindow', {
+              astrologerId: panditId,
+              orderId: chatOrderId,
+            });
+        }else{
+            const result2 = decryptData(result.error,secretKey);
+            const result3 = JSON.parse(result2);
+            console.log("Chat Accept Order Error response ==>" +JSON.stringify(result3));
+            CustomDialogManager2.show({
+                title: 'Alert',
+                message: result3.message,
+                type:2,
+                buttons: [
+                  {
+                    text: 'Ok',
+                    onPress: () => {
+       
+                    },
+                    style: 'default',
+                  },
+                ],
+              });
+        }
+        
+      });
+    }
+
+    const handleCancelWait = (item: any) => {
+  Alert.alert(
+    "Cancel Request",
+    `Cancel chat with ${item.name}?`,
+    [
+      { text: "No" },
+      {
+        text: "Yes",
+        onPress: () => {
+          callChatCancelApi(item.orderId);
+
+          // setWaitlistData((prev) =>
+          //   prev.filter((p) => p.id !== item.id)
+          // );
+
+          // if (waitlistData.length <= 1) {
+          //   setWaitlistVisible(false);
+          // }
+        },
+      },
+    ]
+  );
+};
+
 
     return(
     <SafeAreaProvider>
@@ -451,6 +603,60 @@ const callPanditApi = () => {
           />
 
           <SlideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
+
+            <WaitlistJoinedModal
+              visible={visibleWaitList}
+              onClose={() => setVisibleWaitList(false)}
+            />
+
+              {incomingVisible && <IncomingChatModal
+                visible={incomingVisible}
+                data={panditAcceptedData}
+                onAccept={() => {
+                  setIncomingVisible(false);
+                  console.log("Chat Accepted");
+                 const panditDetails =
+                    Array.isArray(panditAcceptedData) && panditAcceptedData.length > 0
+                      ? panditAcceptedData[0]
+                      : null;
+                  if (!panditDetails) {
+                    console.warn("Pandit details not available yet");
+                    return;
+                  }
+                  Alert.alert("Pandit ID :"+panditDetails.id+"\n"+panditDetails.orderId);
+                  // navigation.push('ChatWindow', {
+                  //   astrologerId: panditDetails.id,
+                  //   orderId: panditDetails.orderId,
+                  // });
+                  callChatAcceptApi(panditDetails.orderId,panditDetails.id);
+                }}
+                onReject={() => {
+                  setIncomingVisible(false);
+                  console.log("Chat Rejected");
+                           const panditDetails =
+                    Array.isArray(panditAcceptedData) && panditAcceptedData.length > 0
+                      ? panditAcceptedData[0]
+                      : null;
+                  if (!panditDetails) {
+                    console.warn("Pandit details not available yet");
+                    return;
+                  }
+                  Alert.alert("Pandit ID :"+panditDetails.id+"\n"+panditDetails.orderId);
+                  // navigation.push('ChatWindow', {
+                  //   astrologerId: panditDetails.id,
+                  //   orderId: panditDetails.orderId,
+                  // });
+
+                  callChatCancelApi(panditDetails.orderId);
+                }}
+              />}
+
+             {/* {yellowWaitListV &&  */}
+             <YellowWaitlistSheet
+                data={astrologers2}
+                onCancel={handleCancelWait}
+              />
+              {/* // } */}
 
              <AppSpinner show={activity} />
         </SafeAreaView>

@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { Constants } from '../../constant';
-import { getRequest, postMultiPartRequest, postRequest } from '../../services/requests';
+import { decryptData, getRequest, postMultiPartRequest, postRequest, secretKey } from '../../services/requests';
 import { resendOtp, verifyOtp } from '../../redux/actions/UserActions';
 import { ServiceConstants } from '../../services/ServiceConstants';
 import { AppSpinner } from '../../utils/AppSpinner';
@@ -100,7 +100,7 @@ const VerifyOtpScreen = ({ route, navigation }: VerifyOtpScreenProps) => {
       console.log('Verify Otp response:'+response);
          const result = JSON.parse(response);
        if (result.success == true){
-          // dispatch(setUserDetails(response?.data.user));
+          // dispatch(setUserDetails({id:result.data.id}));
         navigation.reset({
                 index: 0,
                 routes: [{ name: 'MainTabs' }]
@@ -108,20 +108,20 @@ const VerifyOtpScreen = ({ route, navigation }: VerifyOtpScreenProps) => {
          
         }else if(result.success == false){
           console.log("Failure response "+result);
-            CustomDialogManager2.show({
-              title: 'Alert',
-              message: result.message,
-              type:2,
-              buttons: [
-                {
-                  text: 'Ok',
-                  onPress: () => {
-                    
-                  },
-                  style: 'default',
-                },
-              ],
-            });
+               CustomDialogManager2.show({
+               title: 'Alert',
+               message: result.message,
+               type: 2,
+               buttons: [
+                   {
+                       text: 'Ok',
+                       onPress: () => {
+ 
+                       },
+                       style: 'default',
+                   },
+               ],
+           });
         }
     });
 
@@ -138,69 +138,27 @@ const VerifyOtpScreen = ({ route, navigation }: VerifyOtpScreenProps) => {
       countryCode: countrycode,
     };
     resendOtp(data).then(response => {
-      if (response.response_code == 400) {
-            CustomDialogManager2.show({
+         const result = JSON.parse(response);
+        if (result.success == true){
+          Alert.alert("Otp send successfully.");
+        }else if(result.success == false){
+          console.log("Failure response "+result);
+          const result2 = decryptData(result.error, secretKey);
+          const result3 = JSON.parse(result2);
+          CustomDialogManager2.show({
               title: 'Alert',
-              message: response?.response,
-              type:2,
+              message: result3.message,
+              type: 2,
               buttons: [
-                {
-                  text: 'Ok',
-                  onPress: () => {
-                    
+                  {
+                      text: 'Ok',
+                      onPress: () => {
+
+                      },
+                      style: 'default',
                   },
-                  style: 'default',
-                },
               ],
-            });
-      } else
-        if (response.response_code != 200 && response.errors) {
-          if (response.errors.country_code != '') {
-            CustomDialogManager2.show({
-              title: 'Alert',
-              message: response.errors.country_code,
-              type:2,
-              buttons: [
-                {
-                  text: 'Ok',
-                  onPress: () => {
-                    
-                  },
-                  style: 'default',
-                },
-              ],
-            });
-          } else if (response.errors.mobile_no != '') {
-            CustomDialogManager2.show({
-              title: 'Alert',
-              message: response.errors.mobile_no,
-              type:2,
-              buttons: [
-                {
-                  text: 'Ok',
-                  onPress: () => {
-                    
-                  },
-                  style: 'default',
-                },
-              ],
-            });
-          }
-        } else if (response?.message!=null) {
-             CustomDialogManager2.show({
-              title: 'Success',
-              message: 'OTP resent is successfully.',
-              type:1,
-              buttons: [
-                {
-                  text: 'Ok',
-                  onPress: () => {
-                    
-                  },
-                  style: 'default',
-                },
-              ],
-            });
+          });
         }
     });
 

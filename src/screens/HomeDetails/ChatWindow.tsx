@@ -46,7 +46,6 @@ import { AudioMessage } from "../../utils/AudioMessage";
 // import AudioRecorderPlayer from 'react-native-nitro-sound';
 import AudioRecorderBar from "../../utils/AudioRecorderBar";
 
-
 type Message = {
     id: string;
     sender_type: string;
@@ -91,7 +90,7 @@ export default function ChatWindow({ route }: any) {
     const [recordTime, setRecordTime] = useState('0:00');
     const [audioPath, setAudioPath] = useState('');
     const [paused, setPaused] = useState(false);
-
+  
 
 
 
@@ -159,6 +158,7 @@ export default function ChatWindow({ route }: any) {
             } else if (result.success === false) {
                 const result2 = decryptData(result.error, secretKey);
                 const result3 = JSON.parse(result2);
+                console.log("Chat Details Error ==>" + JSON.stringify(result3));
                 CustomDialogManager2.show({
                     title: 'Alert',
                     message: result3.message,
@@ -193,7 +193,7 @@ export default function ChatWindow({ route }: any) {
                 console.log("Send Messages Error response ==>" + JSON.stringify(result3));
                 CustomDialogManager2.show({
                     title: 'Alert',
-                    message: result3.error,
+                    message: result3.message,
                     type: 2,
                     buttons: [
                         {
@@ -227,17 +227,13 @@ export default function ChatWindow({ route }: any) {
     };
 
     useEffect(() => {
-        if (socket.connected) {
+        if (isConnected) {
             onConnect();
         }
         function onConnect() {
             setIsConnected(true);
             console.log('socket connected', socket.id);
-            // socket.emit('join_chat', {
-            //     orderId,
-            //     id: ServiceConstants.User_ID,
-            //     role: 'user'
-            // });
+   
             socket.emit(`go_online`, { orderId: orderId, from_id: ServiceConstants.User_ID, to_id: astrologerId, type: "user" });
         }
 
@@ -571,17 +567,17 @@ const sendAudio = async () => {
     //     // sendMessageApi([audioFile], '', orderId, true);
 
     //     // 🔥 Optimistic UI
-    //     setMessages1(prev => [
-    //         {
-    //             id: String(Date.now()),
-    //             sender_type: 'user',
-    //             message: audioFile.uri,
-    //             type: 'audio',
-    //             duration: Number(recordTime.split(':')[1]),
-    //             created_at: new Date().toISOString(),
-    //         },
-    //         ...prev,
-    //     ]);
+        // setMessages1(prev => [
+        //     {
+        //         id: String(Date.now()),
+        //         sender_type: 'user',
+        //         message: 'https://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3',
+        //         type: 'audio',
+        //         duration: Number(recordTime.split(':')[1]),
+        //         created_at: new Date().toISOString(),
+        //     },
+        //     ...prev,
+        // ]);
 
     //     setRecordTime('0:00');
     //     setAudioPath('');

@@ -1,5 +1,5 @@
 import { io } from 'socket.io-client';
 
-export const socket = io('http://13.204.207.15:3001', {
-  transports: ['websocket'],autoConnect: true
+export const socket = io('https://socket.astrotalkguruji.com', {
+  transports: ['websocket'], autoConnect: false
 }); //	use the IP address of your machine

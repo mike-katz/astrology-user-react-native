@@ -19,6 +19,7 @@ import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { BackIcon } from "../../assets/icons";
 import { logoutUser } from "../../redux/actions/UserActions";
 import ManagePrivacyModal from "./ManagePrivacyModal";
+import { socket } from "../../../socket";
 
 export default function SettingsScreen({ navigation }: any) {
     // toggles
@@ -62,6 +63,10 @@ export default function SettingsScreen({ navigation }: any) {
                 {
                     text: "OK", onPress: () => {
                         logoutUser(true);
+                        // 🔥 DISCONNECT SOCKET HERE
+                        if(socket.connected) {
+                            socket.disconnect();
+                        }
                         navigation.reset({
                             index: 0,
                             routes: [{ name: 'AuthStack' }],

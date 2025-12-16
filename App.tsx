@@ -45,6 +45,7 @@ import ChatWindow from './src/screens/HomeDetails/ChatWindow';
 import SettingsScreen from './src/screens/Settings/SettingsScreen';
 import OrderHistoryScreen from './src/screens/HomeDetails/OrderHistoryScreen';
 import KundliMatchingScreen from './src/screens/HomeDetails/KundliMatchingScreen';
+import { SocketProvider } from './src/socket/SocketProvider';
 
 
  // Types for navigation
@@ -278,13 +279,16 @@ const App = () => {
 
     <Provider store={store}>
       <SafeAreaProvider>
-        <CustomToast />
-        <CustomDialog />
-        <CustomDialogComponent />
-        <NavigationContainer >
-          {Platform.OS === 'android' && (<StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />)}
-          <RootNavigator initialRoute={initialRoute} />
-        </NavigationContainer>
+
+         <SocketProvider>   {/* 🔥 GLOBAL SOCKET */}
+          <NavigationContainer >
+            <CustomToast />
+            <CustomDialog />
+            <CustomDialogComponent />
+            {Platform.OS === 'android' && (<StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />)}
+            <RootNavigator initialRoute={initialRoute} />
+          </NavigationContainer>
+         </SocketProvider>
       </SafeAreaProvider>
     </Provider>
 

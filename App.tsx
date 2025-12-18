@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import messaging from '@react-native-firebase/messaging';
+import notifee from '@notifee/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './src/screens/Auth/LoginScreen';
 import VerifyOtpScreen from './src/screens/Auth/VerifyOtpScreen';
-import { Platform, StatusBar } from 'react-native';
+import { Alert, PermissionsAndroid, Platform, StatusBar } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import CustomTabBar from './src/utils/CustomTabBar';
 
@@ -46,6 +48,7 @@ import SettingsScreen from './src/screens/Settings/SettingsScreen';
 import OrderHistoryScreen from './src/screens/HomeDetails/OrderHistoryScreen';
 import KundliMatchingScreen from './src/screens/HomeDetails/KundliMatchingScreen';
 import { SocketProvider } from './src/socket/SocketProvider';
+import { requestNotificationPermission } from './src/firebase/notification';
 
 
  // Types for navigation
@@ -267,10 +270,58 @@ const App = () => {
         setInitialRoute('AuthStack'); // fallback
       }
     };
+
     checkLogin();
     asyncLoginAction();
   }, []);
 
+    useEffect(() => {
+      
+    if (Platform.OS === 'android') {
+      requestPermissionAndroid();
+    } else {
+      requestNotificationPermission();
+    }
+
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+      onDisplayNotification(remoteMessage);
+    });
+
+    return unsubscribe;
+  }, []);
+  
+    const requestPermissionAndroid = async () => {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+    );
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      getToken();
+    } else {
+      Alert.alert('Notification permission denied');
+    }
+  };
+  const getToken = async () => {
+    const token = await messaging().getToken();
+    console.log('FCM Token:', token);
+  };
+    const onDisplayNotification = async remoteMessage => {
+    const channelId = await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+    });
+
+    await notifee.displayNotification({
+      title: remoteMessage.notification.title,
+      body: remoteMessage.notification.body,
+      android: {
+        channelId,
+        pressAction: {
+          id: 'default',
+        },
+      },
+    });
+  };
   // Show nothing or splash screen until route is decided
   if (!initialRoute) return null;
 

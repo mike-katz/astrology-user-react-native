@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "848802430780",
+    "project_id": "astro-1e9f7",
+    "storage_bucket": "astro-1e9f7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:848802430780:android:612966cb6fbd1665452839",
+        "android_client_info": {
+          "package_name": "com.astrotalkguru"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyhzLb1n7TQYIJe93JCLBviLUyerPmIBE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

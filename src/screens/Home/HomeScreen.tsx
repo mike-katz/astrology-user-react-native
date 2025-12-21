@@ -26,7 +26,7 @@ import KundliMatchIcon from '../../assets/icons/KundliMatchIcon';
 import FreeChatIcon from '../../assets/icons/FreeChatIcon';
 import AstrologyBlogIcon from '../../assets/icons/AstrologyBlogIcon';
 import { colors, Fonts } from '../../styles';
-import {  useNavigation } from '@react-navigation/native';
+import {  useIsFocused, useNavigation } from '@react-navigation/native';
 import PrivateIcon from '../../assets/icons/PrivateIcon';
 import SearchIcon from '../../assets/icons/SearchIcon';
 import VerifiedIcon from '../../assets/icons/VerifiedIcon';
@@ -51,6 +51,8 @@ import IncomingChatModal from '../../utils/IncomingChatModal';
 import YellowWaitlistSheet from '../../utils/YellowWaitlistSheet';
 import { removeWaitListItem, setWaitList,updateWaitListItem } from '../../redux/slices/waitListSlice';
 import { getFcmTokenAfterLogin } from '../../firebase/fcmService';
+import { useSocket } from '../../socket/SocketProvider';
+
 
 const features = [
   {id: 1, title: 'Daily Horoscope', icon: DailyHoroIcon },
@@ -79,7 +81,9 @@ const astroNews = [
 const { width } = Dimensions.get('window');
 
 const HomeScreen = () =>{
+const { onEvent, isConnected } = useSocket();
 const navigation = useNavigation<any>();
+const isFocused = useIsFocused();
 const colorScheme = useColorScheme(); 
 const dispatch = useDispatch();
 const [menuVisible, setMenuVisible] = useState(false);
@@ -116,48 +120,96 @@ useEffect(() => {
   }, []);
 
 
+// useEffect(() => {
+//   if(ServiceConstants.User_ID!=null){
+//      dispatch(setUserDetails({id:ServiceConstants.User_ID}));
+//     socket.on(`wait_for_pandit`, (msg) => {
+//         console.log("wait_for_pandit--" + JSON.stringify(msg));
+//         setVisibleWaitList(true);
+//         setYellowWaitList(true);
+        
+//         dispatch(setWaitList(msg));
+        
+//     });
+//     socket.on(`pandit_accepted`, (msg) => {
+//          if(visibleWaitList)
+//         setVisibleWaitList(false);
+
+//          setTimeout(()=>{
+//             setPanditAcceptedData(msg);
+//             setIncomingVisible(true);
+//          },1000);
+//     });
+
+//     socket.on(`user_continue_order`, (msg) => {
+//         setYellowWaitList(true);
+//         dispatch(setWaitList(msg));
+
+//     });
+//   }
+// }, []);
+
 useEffect(() => {
-  if(ServiceConstants.User_ID!=null){
-    //  Alert.alert("Home User Id is ...."+ServiceConstants.User_ID);
-     dispatch(setUserDetails({id:ServiceConstants.User_ID}));
-    socket.on(`wait_for_pandit`, (msg) => {
-        // Alert.alert("wait_for_pandit--" + JSON.stringify(msg));
-        console.log("wait_for_pandit--" + JSON.stringify(msg));
-        setVisibleWaitList(true);
-        setYellowWaitList(true);
-        
-        dispatch(setWaitList(msg));
-        
+
+    if (!ServiceConstants.User_ID) return;
+
+    onEvent('wait_for_pandit', (data:any) => {
+      // setAcceptAlertData((prev) => upsertArrayByOrderId(prev, data));
+      // Alert.alert("wait_for_pandit"+JSON.stringify(data));
+       setVisibleWaitList(true);
+       setYellowWaitList(true);
+       dispatch(setWaitList(data));
     });
-    socket.on(`pandit_accepted`, (msg) => {
-        //  Alert.alert("pandit_accepted--" + JSON.stringify(msg));
-         if(visibleWaitList)
+
+    onEvent('pandit_accepted', (data:any) => {
+      console.log("pandit_accepted"+JSON.stringify(data));
+        if(visibleWaitList)
         setVisibleWaitList(false);
 
-         setTimeout(()=>{
-            setPanditAcceptedData(msg);
-            setIncomingVisible(true);
-         },1000);
- 
-    });
-
-    socket.on(`user_continue_order`, (msg) => {
-        //  Alert.alert("user_continue_order--" + JSON.stringify(msg));
         setYellowWaitList(true);
+        dispatch(setWaitList(data));
 
-        dispatch(setWaitList(msg));
+        //  setTimeout(()=>{
+        //     setPanditAcceptedData(data);
+        //     setIncomingVisible(true);
+        //  },1000);
 
+      // let count = 0;
+      // const playSound = () => {
+      //   if (count >= 3) return;
+      //   count++;
+      //   notificationSound.play();
+      //   notificationSound.once('end', () => {
+      //     setTimeout(playSound, 500);
+      //   });
+      // };
+
+      // playSound();
     });
-  }
-}, []);
+
+    onEvent('user_continue_order', (data:any) => {
+      // Alert.alert("user_continue_order"+JSON.stringify(data));
+      if (!data?.order_id) return;
+
+      setYellowWaitList(true);
+      dispatch(removeWaitListItem(data?.id));
+    });
+
+    onEvent('order_completed', (data:any) => {
+      if (!data?.order_id) return;
+      dispatch(removeWaitListItem(data?.id));
+    });
+  
+  }, []);
 
 const callPanditApi = () => {
   setActivity(false)
   getPandit(page).then(response => {
     setActivity(false)
-    console.log('Home - Pandit list response '+response);
+    // console.log('Home - Pandit list response '+response);
     const result = JSON.parse(response);
     setAstrologers(result.data.results);
+    console.log('Home - Pandit list response '+result.data.results);
   });
 }
 
@@ -291,6 +343,10 @@ const callPanditApi = () => {
     }
 
     const handleCancelWait = (item: any) => {
+      if(item.status=="pending" && item.is_accept){
+        callChatAcceptApi(item.order_id,item.pandit_id);
+        dispatch(removeWaitListItem(item.id));
+      }else
       if(item.is_accept){
             navigation.push('ChatWindow', {
               astrologerId:item.panditId,
@@ -305,7 +361,7 @@ const callPanditApi = () => {
               {
                 text: "Yes",
                 onPress: () => {
-                  callChatCancelApi(item.orderId);
+                  callChatCancelApi(item.order_id);
                   dispatch(removeWaitListItem(item.id));
                 },
               },
@@ -434,7 +490,9 @@ const callPanditApi = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ overflow: 'visible',paddingHorizontal: 12,paddingVertical:12 }}
           renderItem={({ item }:any) => (
-          <Pressable style={styles.astroCard} onPress={() => navigation.push('PanditProfileDetailsScreen',{astrologerId:item.id})}>
+           
+          <Pressable style={styles.astroCard} onPress={() => {
+            navigation.push('PanditProfileDetailsScreen',{astrologerId:item.id})}}>
           {/* <View style={styles.badge}>
             <Text style={styles.badgeText}>{'*Celebrity*'}</Text>
             </View> */}
@@ -643,16 +701,17 @@ const callPanditApi = () => {
                     console.warn("Pandit details not available yet");
                     return;
                   }
-                  Alert.alert("Pandit ID :"+panditDetails.panditId+"\n"+panditDetails.orderId);
-                  callChatAcceptApi(panditDetails.orderId,panditDetails.panditId);
-                  dispatch(
-                    updateWaitListItem({
-                      id: panditDetails.id,
-                      changes: {
-                        is_accept: true,
-                      },
-                    })
-                  );
+                  // Alert.alert("Pandit ID :"+panditDetails.pandit_id+"\n"+panditDetails.order_id);
+                  callChatAcceptApi(panditDetails.order_id,panditDetails.pandit_id);
+                  dispatch(removeWaitListItem(panditDetails.id));
+                  // dispatch(
+                  //   updateWaitListItem({
+                  //     id: panditDetails.id,
+                  //     changes: {
+                  //       is_accept: true,
+                  //     },
+                  //   })
+                  // );
                 }}
                 onReject={() => {
                   setIncomingVisible(false);
@@ -674,7 +733,7 @@ const callPanditApi = () => {
                         {
                           text: "Yes",
                           onPress: () => {
-                          callChatCancelApi(panditDetails.orderId);
+                          callChatCancelApi(panditDetails.order_id);
                           dispatch(removeWaitListItem(panditDetails.id));
                           },
                         },
@@ -1081,7 +1140,7 @@ divider2: {
   },
   bottomContainer: {
     position: 'absolute',
-    bottom: Platform.OS==='android'?89:95,   // <-- PLACE ABOVE YOUR TAB BAR
+    bottom: Platform.OS==='android'?99:105,   // <-- PLACE ABOVE YOUR TAB BAR
     width: width,
     paddingHorizontal: 12,
     flexDirection: 'row',

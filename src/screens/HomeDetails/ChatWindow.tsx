@@ -27,13 +27,13 @@ import RemediesTab from "../../assets/icons/RemediesTab";
 import SearchIcon from "../../assets/icons/SearchIcon";
 import { BackIcon } from "../../assets/icons";
 import { useNavigation } from "@react-navigation/native";
-import { socket } from '../../../socket';
+// import { socket } from '../../../socket';
 import RateAstrologerModal from "../../utils/RateAstrologerModal";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import { requestCameraPermission, requestGalleryPermission, StarRating } from "../../constant/Helper";
+import { ms, requestCameraPermission, requestGalleryPermission, StarRating, useCountdown } from "../../constant/Helper";
 import { AppSpinner } from "../../utils/AppSpinner";
-import { createOrderApi, getChatDetails, getPanditChatMessages, sendMessageApi } from "../../redux/actions/UserActions";
+import { createOrderApi, endChatApi, forceEndChatApi, getChatDetails, getPanditChatMessages, sendMessageApi, sendMessageAudioApi } from "../../redux/actions/UserActions";
 import moment from "moment";
 import { ServiceConstants } from "../../services/ServiceConstants";
 import { decryptData, secretKey } from "../../services/requests";
@@ -45,6 +45,7 @@ import ImagePicker from 'react-native-image-crop-picker';
 import { AudioMessage } from "../../utils/AudioMessage";
 import AudioRecorderBar from "../../utils/AudioRecorderBar";
 import { AudioEncoderAndroidType, AudioSourceAndroidType, AVEncoderAudioQualityIOSType, createSound } from "react-native-nitro-sound";
+import { useSocket } from "../../socket/SocketProvider";
 
 type Message = {
     id: string;
@@ -56,11 +57,13 @@ type Message = {
     duration?: number;
 };
 const { width } = Dimensions.get("window");
+
 export default function ChatWindow({ route }: any) {
 
     const { astrologerId, orderId } = route.params;
     const navigation = useNavigation<any>();
     const colorScheme = useColorScheme();
+    const {sendEvent, onEvent,isConnected } = useSocket();
       //Recording Audio
     const soundRef = useRef(createSound());
     const [recordingPath, setRecordingPath] = useState('');
@@ -72,12 +75,12 @@ export default function ChatWindow({ route }: any) {
 
 
 
-    const [isConnected, setIsConnected] = useState(false);
+    // const [isConnected, setIsConnected] = useState(false);
     const [isOnline, setIsOnline] = useState(false);
     const [showRateModal, setShowRateModal] = useState(false);
     const [text, setText] = useState("");
     const flatRef = useRef<FlatList>(null);
-    const [isChatEnded, setIsChatEnded] = useState(true);
+    const [isChatEnded, setIsChatEnded] = useState(false);
     const userDetailsData = useSelector((state: RootState) => state.userDetails.userDetails);
     const [messages1, setMessages1] = useState<any[]>([]);
     const [refreshing, setRefreshing] = useState(false);
@@ -96,16 +99,10 @@ export default function ChatWindow({ route }: any) {
     const [typingUser, setTypingUser] = useState(false);
     const [activeAudioId, setActiveAudioId] = useState<string | null>(null);
     const isLayoutChangingRef = useRef(false);
+    const [panditDetail, setPanditDetail] = useState<any>();
+    const [endTime, setEndTime] = useState('');
+
   
-
-
-    function ms(m: number) {
-  const s = Math.max(0, Math.floor(m / 1000));
-  const mm = String(Math.floor(s / 60)).padStart(2, '0');
-  const ss = String(s % 60).padStart(2, '0');
-  return `${mm}:${ss}`;
-}
-
 useEffect(() => {
   if (isRecording) {
     isLayoutChangingRef.current = true;
@@ -169,21 +166,34 @@ useEffect(() => {
     }
 
     useEffect(() => {
-        
+
         callChatDetailsApi();
     }, []);
 
+    // useEffect(() => {
+
+    //     remainingTime = useCountdown(endTime, () => {
+    //     console.log("⏰ Chat finished");
+    //     // 👉 chat close logic here
+    //     });
+        
+    // }, [endTime]);
+
+     
+
     const callChatDetailsApi = () => {
         // Alert.alert("ChatWindow Pandit ID="+astrologerId);
-        getChatDetails(astrologerId).then(response => {
+        getChatDetails(astrologerId,orderId).then(response => {
             setActivity(false);
             console.log("Chat Details response ==>" + (response));
             const result = JSON.parse(response);
             if (result.success === true) {
                 console.log("Chat Details response222 ==>" + JSON.stringify(result));
+                setPanditDetail(result.data);
                 setAvatarUri(result.data.profile);
                 setPanditName(result.data.name);
                 setIsOnline(result.data.isOnline);
+                setEndTime(result.data.endTime);
             } else if (result.success === false) {
                 const result2 = decryptData(result.error, secretKey);
                 const result3 = JSON.parse(result2);
@@ -215,7 +225,57 @@ useEffect(() => {
             const result = JSON.parse(response);
             if (result.success === true) {
                 console.log("Send Messages response ==>" + JSON.stringify(result));
+                   if (Array.isArray(result.data)) {
+                        // ✅ msg is an array of messages
+                        result.data.forEach((m:any) => {
+                            addMessage(m);
+                        });
+                    } else if (result.data && typeof result.data === 'object') {
+                        // ✅ msg is a single message object
+                        addMessage(result.data);
+                    }
                 sendMessage();
+            } else if (result.success === false) {
+                const result2 = decryptData(result.error, secretKey);
+                const result3 = JSON.parse(result2);
+                console.log("Send Messages Error response ==>" + JSON.stringify(result3));
+                CustomDialogManager2.show({
+                    title: 'Alert',
+                    message: result3.message,
+                    type: 2,
+                    buttons: [
+                        {
+                            text: 'Ok',
+                            onPress: () => {
+
+                            },
+                            style: 'default',
+                        },
+                    ],
+                });
+
+            }
+        });
+    }
+
+    const callSendAudioApi = (audioFile: any) => {
+        sendMessageAudioApi(audioFile, orderId).then(response => {
+            setActivity(false);
+            // console.log("Send Messages response ==>" + response);
+            const result = JSON.parse(response);
+            if (result.success === true) {
+                // console.log("Send Messages response ==>" + JSON.stringify(result));
+                // addMessage(result.data);
+                   if (Array.isArray(result.data)) {
+                        // ✅ msg is an array of messages
+                        result.data.forEach((m:any) => {
+                            addMessage(m);
+                        });
+                    } else if (result.data && typeof result.data === 'object') {
+                        // ✅ msg is a single message object
+                        addMessage(result.data);
+                    }
+                // sendMessage();
             } else if (result.success === false) {
                 const result2 = decryptData(result.error, secretKey);
                 const result3 = JSON.parse(result2);
@@ -255,74 +315,120 @@ useEffect(() => {
         setMessages1(prev => [newMsg, ...prev]);
     };
 
-    useEffect(() => {
-         console.log("🔌 Connecting socket from ChatWindow...");
+    // useEffect(() => {
+    //      console.log("🔌 Connecting socket from ChatWindow...");
     
-       if(!socket.connected){
-            socket.connect();
-            socket.on('connect', onConnect);
+    //    if(!socket.connected){
+    //         socket.connect();
+    //         socket.on('connect', onConnect);
+    //     }
+
+    //     setIsConnected(true);
+    //     socket.emit("go_online", {
+    //         orderId,
+    //         from_id: ServiceConstants.User_ID,
+    //         to_id: astrologerId,
+    //         type: "user",
+    //     });
+    //     socket.on(`go_online`, (data) => {
+    //         console.log("go online--" + JSON.stringify(data));
+    //     });
+
+    //     socket.on('online', (data) => {
+    //         setIsOnline(true);
+    //     });
+
+    //     socket.on('offline', (data) => {
+    //         setIsOnline(false);
+    //     });
+
+    //     // 1. go_online = {id, type}
+    //     // 2. ⁠typing = {from_type, from_id, to_type, to_id}
+    //     // 3. ⁠stop_typing = {from_type, from_id, to_type, to_id}
+
+    //     // socket.on(`typing`, (data) => setTypingUser(data.from_id || data.from));
+    //     socket.on(`typing`, (data) => setTypingUser(true));
+    //     socket.on(`stop_typing`, () => setTypingUser(false));
+    //     socket.on(`receive_message`, (msg) => {
+    //         console.log("receive message--" + JSON.stringify(msg));
+    //         if (Array.isArray(msg)) {
+    //             // ✅ msg is an array of messages
+    //             msg.forEach((m) => {
+    //                 addMessage(m);
+    //             });
+    //         } else if (msg && typeof msg === 'object') {
+    //             // ✅ msg is a single message object
+    //             addMessage(msg);
+    //         }
+    //     });
+
+    //     function onConnect() {
+    //         setIsConnected(true);
+    //         console.log('socket connected', socket.id);
+    //         socket.emit(`go_online`, { orderId: orderId, from_id: ServiceConstants.User_ID, to_id: astrologerId, type: "user" });
+    //     }
+
+    //     // function onDisconnect() {
+    //     //     setIsConnected(false);
+    //     //     console.log('socket disconnected', socket.id);
+    //     // }
+
+    //     return () => {
+    //         console.log('🔥 ChatWindow unmount → disconnect socket');
+    //         // socket.off('connect', onConnect);
+    //         // socket.off('disconnect', onDisconnect);
+    //         socket.off(`typing`);
+    //         socket.off(`stop_typing`);
+    //         socket.off(`receive_message`);
+    //         socket.off(`go_online`);
+    //     };
+    // }, []);
+
+
+useEffect(() => {
+    // if (!astrologerId || !ServiceConstants.User_ID || !orderId) return;
+
+    onEvent('typing', (data) => {
+      setTypingUser(true);
+    });
+
+    onEvent('stop_typing', (data) => {
+    //   setIsTypingUS(false);
+      setTypingUser(false);
+    });
+
+    onEvent('receive_message', (msg) => {
+        if (Array.isArray(msg)) {
+            // ✅ msg is an array of messages
+            msg.forEach((m) => {
+                addMessage(m);
+            });
+        } else if (msg && typeof msg === 'object') {
+            // ✅ msg is a single message object
+            addMessage(msg);
         }
+    });
 
-        setIsConnected(true);
-        socket.emit("go_online", {
-            orderId,
-            from_id: ServiceConstants.User_ID,
-            to_id: astrologerId,
-            type: "user",
-        });
-        socket.on(`go_online`, (data) => {
-            console.log("go online--" + JSON.stringify(data));
-        });
+    onEvent('offline_pandit', (data) => {
+      setPanditDetail({ ...panditDetail, isOnline: false });
+    });
 
-        socket.on('online', (data) => {
-            setIsOnline(true);
-        });
+    onEvent('online_pandit', (data) => {
+      setPanditDetail({ ...panditDetail, isOnline: true });
+    });
 
-        socket.on('offline', (data) => {
-            setIsOnline(false);
-        });
+    return () => {
+      sendEvent('stop_typing', {
+        orderId,
+        id: astrologerId,
+        user_type: 'pandit',
+        type: 'message'
+      });
+    };
+  }, []);
 
-        // 1. go_online = {id, type}
-        // 2. ⁠typing = {from_type, from_id, to_type, to_id}
-        // 3. ⁠stop_typing = {from_type, from_id, to_type, to_id}
 
-        // socket.on(`typing`, (data) => setTypingUser(data.from_id || data.from));
-        socket.on(`typing`, (data) => setTypingUser(true));
-        socket.on(`stop_typing`, () => setTypingUser(false));
-        socket.on(`receive_message`, (msg) => {
-            console.log("receive message--" + JSON.stringify(msg));
-            if (Array.isArray(msg)) {
-                // ✅ msg is an array of messages
-                msg.forEach((m) => {
-                    addMessage(m);
-                });
-            } else if (msg && typeof msg === 'object') {
-                // ✅ msg is a single message object
-                addMessage(msg);
-            }
-        });
 
-        function onConnect() {
-            setIsConnected(true);
-            console.log('socket connected', socket.id);
-            socket.emit(`go_online`, { orderId: orderId, from_id: ServiceConstants.User_ID, to_id: astrologerId, type: "user" });
-        }
-
-        // function onDisconnect() {
-        //     setIsConnected(false);
-        //     console.log('socket disconnected', socket.id);
-        // }
-
-        return () => {
-            console.log('🔥 ChatWindow unmount → disconnect socket');
-            // socket.off('connect', onConnect);
-            // socket.off('disconnect', onDisconnect);
-            socket.off(`typing`);
-            socket.off(`stop_typing`);
-            socket.off(`receive_message`);
-            socket.off(`go_online`);
-        };
-    }, []);
 
     // typing handlers
     let typingTimer: any;
@@ -331,29 +437,34 @@ useEffect(() => {
         if (!isConnected) return;
         // STOP typing when input empty
         if (!val.trim()) {
-            socket.emit(`stop_typing`, {
-                orderId: orderId,
-                // from_type: "user",
-                // from_id: ServiceConstants.User_ID,
-                // to_type: "pandit",
-                // to_id: astrologerId,
+            // socket.emit(`stop_typing`, {
+            //     orderId: orderId,
+            // });
+            sendEvent('stop_typing', {
+                orderId,
+                type: 'message'
             });
             return;
         }
 
-        socket.emit(`typing`, {
-            orderId: orderId,
-            //   from_type: "user", from_id:ServiceConstants.User_ID,
-            //   to_type: "pandit", to_id: astrologerId
+        // socket.emit(`typing`, {
+        //     orderId: orderId,
+        // });
+        sendEvent('typing', {
+            orderId,
+            type: 'message'
         });
         clearTimeout(typingTimer);
         typingTimer = setTimeout(() => {
-            socket.emit(`stop_typing`, {
-                orderId: orderId,
-                // from_type: "user", from_id: ServiceConstants.User_ID,
-                // to_type: "pandit", to_id:astrologerId
+            // socket.emit(`stop_typing`, {
+            //     orderId: orderId,
+            // });
+            sendEvent('stop_typing', {
+                orderId,
+                type: 'message'
             });
         }, 5000);
+
     }
 
 
@@ -366,7 +477,6 @@ useEffect(() => {
         //     message:text.trim(), 
         //     created_at:new Date().toISOString()
         // };
-
         // setMessages1(prev => [newMsg, ...prev]);
         setText("");
         // scroll to end
@@ -379,16 +489,17 @@ useEffect(() => {
     }, [text]);
 
     const endChat = () => {
-        setIsChatEnded(true);
-        setMessages1((p) => [
-            ...p,
-            {
-                id: String(Date.now()),
-                sender_type: "system",
-                message: "You ended the chat",
-                created_at: new Date().toISOString()
-            } as any,
-        ])
+        // setIsChatEnded(true);
+        // setMessages1((p) => [
+            
+        //     {
+        //         id: String(Date.now()),
+        //         sender_type: "system",
+        //         message: "You ended the chat",
+        //         created_at: new Date().toISOString()
+        //     } as any,...p
+        // ])
+        callEndChat();
     };
     const startChat = () => {
         setIsChatEnded(false);
@@ -424,7 +535,8 @@ useEffect(() => {
 
                     return (
                         <View key={index} style={styles.imageWrapper}>
-                            <FastImage source={{ uri }} style={styles.chatImage} />
+                            <FastImage source={{ uri }} style={styles.chatImage} 
+                            resizeMode={FastImage.resizeMode.contain}/>
 
                             {isLast && (
                                 <View style={styles.overlay}>
@@ -526,11 +638,11 @@ useEffect(() => {
 
     const handleBack = () => {
 
-        socket.emit(`go_offline`, {
-            orderId: orderId,
-            // from_type: "user", from_id: ServiceConstants.User_ID,
-            // to_type: "pandit", to_id:astrologerId
-        });
+        // socket.emit(`go_offline`, {
+        //     orderId: orderId,
+        //     // from_type: "user", from_id: ServiceConstants.User_ID,
+        //     // to_type: "pandit", to_id:astrologerId
+        // });
         navigation.goBack();
     }
     const onEdit = () => {
@@ -683,18 +795,24 @@ const onCancelRecord = async () => {
 
     const audioPath =
       Platform.OS === 'android' ? path : recordingPath;
+        const audioFile = {
+            uri: audioPath,
+            name: `audio_${Date.now()}.mp4`,
+            type: 'audio/mpeg',
+        };
+        callSendAudioApi(audioFile);
 
     // 🔥 Optimistic UI
-    setMessages1(prev => [
-      {
-        id: String(Date.now()),
-        sender_type: 'user',
-        message: audioPath,
-        type: 'audio',
-        created_at: new Date().toISOString(),
-      },
-      ...prev,
-    ]);
+    // setMessages1(prev => [
+    //   {
+    //     id: String(Date.now()),
+    //     sender_type: 'user',
+    //     message: audioPath,
+    //     type: 'audio',
+    //     created_at: new Date().toISOString(),
+    //   },
+    //   ...prev,
+    // ]);
 
     } catch (e) {
       Alert.alert('Stop record error', String(e));
@@ -811,7 +929,97 @@ setTimeout(async () => {
         }
     };
 
- 
+
+
+
+ const remainingSeconds = useCountdown(endTime, () => {
+    console.log("⏰ Chat finished");
+    setIsChatEnded(true);
+    
+    callForceEndChat();
+});
+
+    const callForceEndChat = () => {
+        forceEndChatApi(orderId).then(response => {
+            setActivity(false);
+            // console.log("End Chat Messages response ==>" + response);
+            const result = JSON.parse(response);
+            if (result.success === true) {
+
+                setIsChatEnded(true);
+                setMessages1((p) => [
+                    
+                    {
+                        id: String(Date.now()),
+                        sender_type: "system",
+                        message: "You ended the chat",
+                        created_at: new Date().toISOString()
+                    } as any,...p
+                ])
+                // console.log("End Chat Messages response ==>" + JSON.stringify(result));
+            } else if (result.success === false) {
+                const result2 = decryptData(result.error, secretKey);
+                const result3 = JSON.parse(result2);
+                console.log("End Chat Error response ==>" + JSON.stringify(result3));
+                CustomDialogManager2.show({
+                    title: 'Alert',
+                    message: result3.message,
+                    type: 2,
+                    buttons: [
+                        {
+                            text: 'Ok',
+                            onPress: () => {
+
+                            },
+                            style: 'default',
+                        },
+                    ],
+                });
+            }
+        });
+    }
+
+    const callEndChat = () => {
+
+        endChatApi(orderId).then(response => {
+            setActivity(false);
+            // console.log("End Chat Messages response ==>" + response);
+            const result = JSON.parse(response);
+            if (result.success === true) {
+
+                setIsChatEnded(true);
+                setMessages1((p) => [
+                    
+                    {
+                        id: String(Date.now()),
+                        sender_type: "system",
+                        message: "You ended the chat",
+                        created_at: new Date().toISOString()
+                    } as any,...p
+                ]);
+
+            } else if (result.success === false) {
+                const result2 = decryptData(result.error, secretKey);
+                const result3 = JSON.parse(result2);
+                console.log("End Chat Error response ==>" + JSON.stringify(result3));
+                CustomDialogManager2.show({
+                    title: 'Alert',
+                    message: result3.message,
+                    type: 2,
+                    buttons: [
+                        {
+                            text: 'Ok',
+                            onPress: () => {
+
+                            },
+                            style: 'default',
+                        },
+                    ],
+                });
+            }
+        });
+
+    }
 
 
     return (
@@ -837,6 +1045,7 @@ setTimeout(async () => {
                         <View style={styles.headerTitle}>
                             <Text style={styles.headerName}>{panditName}</Text>
                             <Text style={styles.headerStatus}>{isOnline ? "Online" : "Offline"}</Text>
+                            <Text style={styles.headerStatus}>{remainingSeconds}</Text>
                         </View>
                         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                             <TouchableOpacity onPress={() => { }} style={{ width: 30, height: 30, padding: 0, justifyContent: 'center' }}>
@@ -919,7 +1128,8 @@ setTimeout(async () => {
 
 
                         {/* Bottom input */}
-                        <View style={styles.inputBarWrap}>
+                          {!isChatEnded && (
+                                <View style={styles.inputBarWrap}>
                             <View style={styles.inputLeft}>
                                 {/* <TouchableOpacity style={styles.iconBtn}><Feather name="smile" size={20} color="#777" /></TouchableOpacity> */}
                                 <TouchableOpacity style={styles.iconBtn} onPress={() => {
@@ -961,6 +1171,10 @@ setTimeout(async () => {
 
                             <View style={styles.inputRight}>
                                 <TouchableOpacity onPress={() => {
+                                    sendEvent('stop_typing', {
+                                        orderId,
+                                        type: 'message'
+                                    });
                                     callSendMessagesApi(false);
                                 }}
                                     disabled={isChatEnded}
@@ -977,7 +1191,7 @@ setTimeout(async () => {
                         
 
                             </View>
-                        </View>
+                        </View>)}
 
                     </ImageBackground>
                 </KeyboardAvoidingView>
@@ -1056,8 +1270,8 @@ const styles = StyleSheet.create({
         borderRadius: 32 / 2,
     },
     headerTitle: { flex: 1, alignItems: "center" },
-    headerName: { fontSize: 16, fontWeight: "600" },
-    headerStatus: { fontSize: 12, color: "#777" },
+    headerName: { fontSize: 14, fontWeight: "600" ,fontFamily:Fonts.Medium},
+    headerStatus: { fontSize: 9, color: "#777" ,fontFamily:Fonts.Medium},
 
     chatWrapper: {
         flex: 1,
@@ -1209,10 +1423,13 @@ const styles = StyleSheet.create({
     imageWrapper: {
         //   width: '48%',
         width: '100%',
-        aspectRatio: 1,
+        height:200,
+        padding:5,
+        // aspectRatio: 1,
         margin: '1%',
         borderRadius: 10,
         overflow: 'hidden',
+        backgroundColor:'white'
     },
 
     chatImage: {

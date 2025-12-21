@@ -28,6 +28,8 @@ export const Apis = {
   getChatDetails: `${BASE_URL}chat/getDetail?`,
   chatAcceptOrder:`${BASE_URL}order/acceptOrder`,
   chatCancelOrder:`${BASE_URL}order/cancelOrder`,
+  forceEndChat:`${BASE_URL}chat/forceEndChat`,
+  endChat:`${BASE_URL}chat/endChat`,
 };
 
 export const Events = {};

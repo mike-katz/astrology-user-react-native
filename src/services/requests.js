@@ -46,7 +46,7 @@ export const getRequest = async ({ header = headerWithBearer(),body, url ,method
       // convert to string before attach to URL
       const payload = (encrypted);
       url = `${url}payload=${payload}`; 
-        console.log("GET REQUEST URL →", url,header,method,body);
+        // console.log("GET REQUEST URL →", url,header,method,body);
     }
      console.log("GET REQUEST URL →", url,header,method,body);
   return axios({
@@ -56,9 +56,10 @@ export const getRequest = async ({ header = headerWithBearer(),body, url ,method
   timeout: 40000,
 })
   .then((res) => {
-    console.log("RAW AXIOS SUCCESS ---"+res);
-      showLog(url, res.status, method, header, null, res.data);
+      console.log("RAW AXIOS SUCCESS ---"+res);
+      // showLog(url, res.status, method, header, null, res.data);
      const result2 = decryptData(res.data.data,secretKey);
+     console.log("RAW AXIOS SUCCESS 111---"+result2);
     return result2;
   }).catch((error) => {
     console.log("RAW AXIOS ERROR →", error);

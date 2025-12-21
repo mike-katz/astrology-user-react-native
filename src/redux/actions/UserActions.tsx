@@ -144,6 +144,35 @@ export const applyUserFollowApi = async (panditID: any) => {
     }
   return null;
 };
+
+export const forceEndChatApi = async (orderId: any) => {
+  const body: any = {};
+  body['orderId'] = orderId;
+  const response = await postRequest({ body, url: Apis.forceEndChat });
+    const result = JSON.parse(response);
+    if(result.success == true){
+        return response;
+    }else{
+      return response;
+    }
+  return null;
+};
+
+export const endChatApi = async (orderId: any) => {
+  const body: any = {};
+  body['orderId'] = orderId;
+  const response = await postRequest({ body, url: Apis.endChat });
+    const result = JSON.parse(response);
+    if(result.success == true){
+        return response;
+    }else{
+      return response;
+    }
+  return null;
+};
+
+
+
 export const getFollowing = async (page:any) => {
     const body: any = {};
     body['page'] = page;
@@ -192,9 +221,10 @@ export const getPanditChatMessages = async (orderId:any,pagenum:any) => {
 
 
 
-export const getChatDetails = async (panditId:any) => {
+export const getChatDetails = async (panditId:any,orderId:any) => {
   const body: any = {};
   body['panditId'] = panditId;
+  body['orderId'] = orderId;
   const response = await getRequest({
     url: Apis.getChatDetails,
     header: headerWithBearer(),
@@ -226,6 +256,29 @@ export const sendMessageApi = async (files: any,message:string,orderId:any,isIma
     body.append('message', message);
     body.append('type', "text");
   }
+    const response = await postMultiPartRequest({
+      header: headerBearerMultiPart(),
+      body: body,
+      url: Apis.sendMessage,
+    });
+    const result = JSON.parse(response);
+    if(result.success == true){
+        return response;
+    }else{
+      return response;
+    }
+  return null;
+};
+
+export const sendMessageAudioApi = async (files: any,orderId:any) => {
+  const body = new FormData();
+  body.append('orderId', orderId);
+    body.append('message', {
+      uri: files.uri,
+      name: `audio_${Date.now()}.mp4`,
+      type: 'audio/mpeg',
+    } as any);
+    body.append('type', "audio");
     const response = await postMultiPartRequest({
       header: headerBearerMultiPart(),
       body: body,

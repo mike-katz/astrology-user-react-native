@@ -271,8 +271,8 @@ export default function OrderHistoryScreen() {
           {item.status === "continue" && item.is_accept && (
             <TouchableOpacity style={[styles.statusbtn, { borderColor: 'green' }]} onPress={()=>{
                      navigation.push('ChatWindow', {
-                        astrologerId: item.panditId,
-                        orderId: item.orderId,
+                        astrologerId: item.pandit_id,
+                        orderId: item.order_id,
                       });
                      
             }}>
@@ -289,7 +289,7 @@ export default function OrderHistoryScreen() {
                     is_accept: false,
                     status: "cancel",
                   });
-                callChatCancelApi(item.orderId);
+                callChatCancelApi(item.order_id);
 
                 dispatch(removeWaitListItem(item.id));
               }}>
@@ -306,7 +306,7 @@ export default function OrderHistoryScreen() {
                     is_accept: true,
                     status: "continue",
                   });
-                callChatAcceptApi(item.orderId, item.panditId);
+                callChatAcceptApi(item.order_id, item.pandit_id);
                 dispatch(updateWaitListItem({
                                       id: item.id,
                                       changes: {

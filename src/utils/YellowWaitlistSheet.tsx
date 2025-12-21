@@ -17,8 +17,10 @@ import { Fonts } from "../styles";
 
 const { height } = Dimensions.get("window");
 
-const COLLAPSED = 20;
-const EXPANDED = 260;
+
+const MAX_HEIGHT = 260;
+const COLLAPSED_HEIGHT = 60; // arrow + thodu content
+const TRANSLATE_Y = MAX_HEIGHT - COLLAPSED_HEIGHT+50;
 type Props = {
   data: any[];
   onCancel: (item: any) => void;
@@ -28,7 +30,7 @@ export default function YellowWaitlistSheet({
   data,
   onCancel,
 }: Props) {
-  const translateY = useRef(new Animated.Value(EXPANDED - COLLAPSED)).current;
+  const translateY = useRef(new Animated.Value(TRANSLATE_Y)).current;
   const isOpen = useRef(false);
   const [isOpenArrow, setIsOpenArrow] = React.useState(false);
 
@@ -37,12 +39,11 @@ export default function YellowWaitlistSheet({
   }, []);
 
   const toggleSheet = () => {
-    Animated.spring(translateY, {
-      toValue: isOpen.current ? EXPANDED - COLLAPSED : 0,
-      useNativeDriver: true,
-    }).start();
-    isOpen.current = !isOpen.current;
-    isOpenArrow ? close() : open();
+  if (isOpen.current) {
+    close();
+  } else {
+    open();
+  }
   };
 
   const panResponder = useRef(
@@ -69,14 +70,20 @@ export default function YellowWaitlistSheet({
 
   const close = () => {
     Animated.spring(translateY, {
-      toValue: EXPANDED - COLLAPSED,
+      toValue: TRANSLATE_Y,
       useNativeDriver: true,
     }).start();
     isOpen.current = false;
     setIsOpenArrow(false);
   };
 
-  const renderItem = ({ item }: any) => (
+  const renderItem = ({ item }: any) => {
+    const actionText = !item.is_accept
+  ? "Cancel"
+  : item.status === "pending"
+    ? "Accept"
+    : "Chat";
+    return(
     <View style={styles.row}>
       <FastImage source={{ uri: item.profile }} style={styles.avatar} />
       <View style={{ flex: 1 }}>
@@ -92,11 +99,11 @@ export default function YellowWaitlistSheet({
       <TouchableOpacity style={{ alignItems: 'center',borderColor:'gray',borderRadius:10,borderWidth:1,paddingHorizontal:10,paddingVertical:5 }} onPress={() => onCancel(item)}>
         {/* {item.is_accept?null:<Feather name="x-circle" size={22} color="#999" />} */}
         <Text style={styles.subText}>
-          {item.is_accept?"Chat":"Cancel"}
+          {actionText}
         </Text>
       </TouchableOpacity>
     </View>
-  );
+  )};
 
   return (
     <Animated.View
@@ -126,7 +133,7 @@ const styles = StyleSheet.create({
   container: {
     position: "absolute",
     bottom: 80,
-    height: EXPANDED,
+    height: MAX_HEIGHT,
     width: "100%",
     backgroundColor: "#FFF6C7",
     borderTopLeftRadius: 20,

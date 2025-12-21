@@ -20,8 +20,11 @@ type Props = {
 
 export default function WaitlistJoinedModal({ visible,data, onClose }: Props) {
   const userDetailsData = useSelector((state: RootState) => state.userDetails.userDetails);
-  const panditDetails = Array.isArray(data) && data.length > 0 ? data[0] : null;
-  console.log("Waitlist Joined Modal =="+panditDetails);
+  const panditDetails =
+  Array.isArray(data) && data.length > 0
+    ? data[data.length - 1]
+    : null;
+  // console.log("Waitlist Joined Modal =="+panditDetails);
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>

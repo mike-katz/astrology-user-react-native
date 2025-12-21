@@ -140,7 +140,8 @@ useEffect(() => {
   return (
     <View style={[
       styles.container,
-      isUser ? styles.userBubble : styles.agentBubble
+      styles.userBubble
+      // isUser ? styles.userBubble : styles.agentBubble
     ]}>
       <TouchableOpacity onPress={togglePlay} style={[
     styles.playBtn,
@@ -187,8 +188,7 @@ useEffect(() => {
            disabled={true}
         />
         </View>
-      
-
+    
       <Text style={styles.timeText}>
           {duration}
       </Text>

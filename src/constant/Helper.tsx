@@ -3,6 +3,7 @@ import Feather from "react-native-vector-icons/Feather";
 import { colors } from "../styles";
 import { CustomDialogManager2 } from "../utils/CustomDialog2";
 import { openSettings, PERMISSIONS, request, RESULTS } from "react-native-permissions";
+import { useEffect, useRef, useState } from "react";
 
  export const StarRating = ({size, rating }:any) => {
     return (
@@ -97,3 +98,87 @@ import { openSettings, PERMISSIONS, request, RESULTS } from "react-native-permis
                 });
         return false;
     };
+
+export const socketSendMessage = (event:any, data:any) => {
+  return JSON.stringify({
+    event: event,
+    data: data
+  });
+};
+
+export function ms(m: number) {
+  const s = Math.max(0, Math.floor(m / 1000));
+  const mm = String(Math.floor(s / 60)).padStart(2, '0');
+  const ss = String(s % 60).padStart(2, '0');
+  return `${mm}:${ss}`;
+}
+
+const formatTime = (ms: number) => {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  return `${minutes.toString().padStart(2, "0")}:${seconds
+    .toString()
+    .padStart(2, "0")}`;
+};
+
+export const useCountdown = (
+  endTime?: string | number,
+  onFinish?: () => void
+) => {
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const finishedRef = useRef(false); // 👈 guard
+
+  useEffect(() => {
+    if (!endTime) return;
+
+    finishedRef.current = false; // reset on new endTime
+
+    const endMillis =
+      typeof endTime === "number"
+        ? endTime * 1000
+        : new Date(endTime).getTime();
+
+    if (isNaN(endMillis)) return;
+
+    const timer = setInterval(() => {
+      const diff = Math.floor((endMillis - Date.now()) / 1000);
+
+      if (diff <= 0) {
+        if (!finishedRef.current) {
+          finishedRef.current = true;
+          setSecondsLeft(0);
+          onFinish?.(); // ✅ ONLY ONCE
+        }
+        clearInterval(timer); // 🔥 STOP LOOP
+        return;
+      }
+
+      setSecondsLeft(diff);
+    }, 1000);
+
+    // run immediately
+    const initialDiff = Math.floor((endMillis - Date.now()) / 1000);
+    setSecondsLeft(Math.max(0, initialDiff));
+
+    return () => clearInterval(timer);
+  }, [endTime]);
+
+  // format mm:ss
+  const minutes = Math.floor(secondsLeft / 60);
+  const seconds = secondsLeft % 60;
+
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+};
+
+
+
+
+export const to12Hour = (iso: string) => {
+  return new Date(iso).toLocaleString('en-IN', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+};

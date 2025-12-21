@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import messaging from '@react-native-firebase/messaging';
+import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -48,7 +48,7 @@ import SettingsScreen from './src/screens/Settings/SettingsScreen';
 import OrderHistoryScreen from './src/screens/HomeDetails/OrderHistoryScreen';
 import KundliMatchingScreen from './src/screens/HomeDetails/KundliMatchingScreen';
 import { SocketProvider } from './src/socket/SocketProvider';
-import { requestNotificationPermission } from './src/firebase/notification';
+import { SoundScreen } from './src/utils/SoundScreen';
 
 
  // Types for navigation
@@ -240,7 +240,12 @@ const RootNavigator = ({ initialRoute }: { initialRoute: keyof RootStackParamLis
     <RootStack.Screen
         name="KundliMatchingScreen"
         component={KundliMatchingScreen}
-        options={{ headerShown: false }} />      
+        options={{ headerShown: false }} />    
+
+           <RootStack.Screen
+        name="SoundScreen"
+        component={SoundScreen}
+        options={{ headerShown: false }} />    
         
     </RootStack.Navigator>)
 };
@@ -275,46 +280,24 @@ const App = () => {
     asyncLoginAction();
   }, []);
 
-    useEffect(() => {
-      
-    if (Platform.OS === 'android') {
-      requestPermissionAndroid();
-    } else {
-      requestNotificationPermission();
-    }
-
+  useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
-      console.log('A new FCM message arrived!', JSON.stringify(remoteMessage));
-      onDisplayNotification(remoteMessage);
+      // console.log('A new FCM message arrived!', JSON.stringify(remoteMessage));
+      await onDisplayNotification(remoteMessage);
     });
 
     return unsubscribe;
   }, []);
   
-    const requestPermissionAndroid = async () => {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
-    );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      getToken();
-    } else {
-      Alert.alert('Notification permission denied');
-    }
-  };
-  const getToken = async () => {
-    const token = await messaging().getToken();
-    console.log('FCM Token:', token);
-  };
-    const onDisplayNotification = async remoteMessage => {
+  const onDisplayNotification = async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
     const channelId = await notifee.createChannel({
       id: 'default',
       name: 'Default Channel',
     });
-
     await notifee.displayNotification({
-      title: remoteMessage.notification.title,
-      body: remoteMessage.notification.body,
+      title: remoteMessage.notification?.title,
+      body: remoteMessage.notification?.body,
       android: {
         channelId,
         pressAction: {

@@ -16,6 +16,7 @@ import {
     ImageBackground,
     Alert,
     Modal,
+    PermissionsAndroid,
 } from "react-native";
 import FastImage from "react-native-fast-image";
 import Feather from "react-native-vector-icons/Feather";
@@ -37,14 +38,13 @@ import moment from "moment";
 import { ServiceConstants } from "../../services/ServiceConstants";
 import { decryptData, secretKey } from "../../services/requests";
 import { CustomDialogManager2 } from "../../utils/CustomDialog2";
-const { width } = Dimensions.get("window");
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+
 import AttachmentModal from "../../utils/AttachmentModal";
 import ImageResizer from 'react-native-image-resizer';
 import ImagePicker from 'react-native-image-crop-picker';
 import { AudioMessage } from "../../utils/AudioMessage";
-// import AudioRecorderPlayer from 'react-native-nitro-sound';
 import AudioRecorderBar from "../../utils/AudioRecorderBar";
+import { AudioEncoderAndroidType, AudioSourceAndroidType, AVEncoderAudioQualityIOSType, createSound } from "react-native-nitro-sound";
 
 type Message = {
     id: string;
@@ -55,11 +55,23 @@ type Message = {
     type: string;
     duration?: number;
 };
-
+const { width } = Dimensions.get("window");
 export default function ChatWindow({ route }: any) {
+
     const { astrologerId, orderId } = route.params;
     const navigation = useNavigation<any>();
     const colorScheme = useColorScheme();
+      //Recording Audio
+    const soundRef = useRef(createSound());
+    const [recordingPath, setRecordingPath] = useState('');
+    const [recordPosition, setRecordPosition] = useState(0);
+    const [isRecordLoading, setIsRecordLoading] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const [isStopLoading, setIsStopLoading] = useState(false);
+    const [pauseRecord, setPauseRecord] = useState(false);
+
+
+
     const [isConnected, setIsConnected] = useState(false);
     const [isOnline, setIsOnline] = useState(false);
     const [showRateModal, setShowRateModal] = useState(false);
@@ -82,13 +94,34 @@ export default function ChatWindow({ route }: any) {
     const [selectedImages, setSelectedImages] = useState<any[]>([]);
     const DEFAULT_AVATAR = require('../../assets/images/AquariusProfilePic.png');
     const [typingUser, setTypingUser] = useState(false);
-    //Audio
-    const [isRecording, setIsRecording] = useState(false);
-    const [recordTime, setRecordTime] = useState('0:00');
-    const [audioPath, setAudioPath] = useState('');
-    const [paused, setPaused] = useState(false);
+    const [activeAudioId, setActiveAudioId] = useState<string | null>(null);
+    const isLayoutChangingRef = useRef(false);
   
+
+
+    function ms(m: number) {
+  const s = Math.max(0, Math.floor(m / 1000));
+  const mm = String(Math.floor(s / 60)).padStart(2, '0');
+  const ss = String(s % 60).padStart(2, '0');
+  return `${mm}:${ss}`;
+}
+
+useEffect(() => {
+  if (isRecording) {
+    isLayoutChangingRef.current = true;
+  } else {
+    // small delay to let layout settle
+    setTimeout(() => {
+      isLayoutChangingRef.current = false;
+    }, 300);
+  }
+}, [isRecording]);
+
     const loadMore = () => {
+        if (isLayoutChangingRef.current) {
+            console.log('⛔ Skipping pagination due to layout change');
+            return;
+        }
         if (!loadingMore) {
             setPage(prev => prev + 1);
         }
@@ -115,20 +148,20 @@ export default function ChatWindow({ route }: any) {
                 const result2 = decryptData(result.error, secretKey);
                 const result3 = JSON.parse(result2);
                 console.log("Chat Messages Error response ==>" + JSON.stringify(result3));
-                CustomDialogManager2.show({
-                    title: 'Alert',
-                    message: result3.message,
-                    type: 2,
-                    buttons: [
-                        {
-                            text: 'Ok',
-                            onPress: () => {
+                // CustomDialogManager2.show({
+                //     title: 'Alert',
+                //     message: result3.message,
+                //     type: 2,
+                //     buttons: [
+                //         {
+                //             text: 'Ok',
+                //             onPress: () => {
 
-                            },
-                            style: 'default',
-                        },
-                    ],
-                });
+                //             },
+                //             style: 'default',
+                //         },
+                //     ],
+                // });
 
             }
 
@@ -136,6 +169,7 @@ export default function ChatWindow({ route }: any) {
     }
 
     useEffect(() => {
+        
         callChatDetailsApi();
     }, []);
 
@@ -426,14 +460,16 @@ export default function ChatWindow({ route }: any) {
                 )}
 
                 <AudioMessage
-                uri={item.message}
-                duration={item.duration}
-                isUser={isUser}
-                />
+                    audioId={item.id}
+                    uri={item.message}
+                    isUser={isUser}
+                    activeAudioId={activeAudioId}
+                    onRequestPlay={(id) => setActiveAudioId(id)}
+                    />
 
                 {isUser && <View style={{ width: 46, }} >
                         <FastImage
-                            //  source={dummyUri ? { uri: dummyUri } : DEFAULT_AVATAR}
+                            
                             source={DEFAULT_AVATAR}
                             style={styles.msgAvatarUser} />
                     </View>}
@@ -507,56 +543,15 @@ export default function ChatWindow({ route }: any) {
         setRatingStar(data.rating);
     };
 
-    const startRecording = async () => {
-    // try {
-    //     const path = await AudioRecorderPlayer.startRecorder();
 
-    //     setAudioPath(path);
-    //     setIsRecording(true);
-    //     setPaused(false);
 
-    //     AudioRecorderPlayer.addRecordBackListener((e: any) => {
-    //         const sec = Math.floor(e.currentPosition / 1000);
-    //         setRecordTime(`0:${sec < 10 ? '0' + sec : sec}`);
-    //     });
-    // } catch (e) {
-    //     console.log('Start recording error', e);
-    // }
-};
-
-const pauseRecording = async () => {
-    // try {
-    //     if (paused) {
-    //         await AudioRecorderPlayer.resumeRecorder();
-    //     } else {
-    //         await AudioRecorderPlayer.pauseRecorder();
-    //     }
-    //     setPaused(!paused);
-    // } catch (e) {
-    //     console.log('Pause error', e);
-    // }
-};
-
-const cancelRecording = async () => {
-    // try {
-    //     await AudioRecorderPlayer.stopRecorder();
-    //     AudioRecorderPlayer.removeRecordBackListener();
-
-        setIsRecording(false);
-    //     setPaused(false);
-    //     setRecordTime('0:00');
-    //     setAudioPath('');
-    // } catch (e) {
-    //     console.log('Cancel error', e);
-    // }
-};
 
 const sendAudio = async () => {
     // try {
     //     const path = await AudioRecorderPlayer.stopRecorder();
     //     AudioRecorderPlayer.removeRecordBackListener();
 
-        setIsRecording(false);
+        // setIsRecording(false);
     //     setPaused(false);
 
     //     const audioFile = {
@@ -587,6 +582,126 @@ const sendAudio = async () => {
     //     console.log('Send audio error', e);
     // }
 };
+
+  const requestPermissions = async () => {
+    if (Platform.OS !== 'android') return true;
+    const sdk = Platform.Version as number;
+    if (sdk >= 33) {
+      const res = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO
+      );
+      return res === PermissionsAndroid.RESULTS.GRANTED;
+    }
+    const grants = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+    ]);
+    return (
+      grants['android.permission.RECORD_AUDIO'] ===
+      PermissionsAndroid.RESULTS.GRANTED
+    );
+  };
+  const onStartRecord = async () => {
+    if (!(await requestPermissions())) {
+      Alert.alert('Permission required', 'Microphone permission needed');
+      return;
+    }
+    const audioSet = {
+      AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
+      AudioSourceAndroid: AudioSourceAndroidType.MIC,
+      AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
+      AVNumberOfChannelsKeyIOS: 2,
+      AVFormatIDKeyIOS: 'aac' as const,
+      AVModeIOS: 'measurement' as const,
+    };
+    try {
+      setIsRecordLoading(true);
+    //   setLoadingMessage('Loading...');
+      const uri = await soundRef.current.startRecorder(
+        undefined,
+        audioSet,
+        true
+      );
+      setRecordingPath(uri);
+      setIsRecording(true);
+      setRecordPosition(0);
+    } catch (e) {
+      Alert.alert('Start record error', String(e));
+    } finally {
+      setIsRecordLoading(false);
+    }
+
+    // Subscribe
+    soundRef.current.addRecordBackListener((e) => {
+      setIsRecording(e.isRecording ?? true);
+      setRecordPosition(e.currentPosition ?? 0);
+    });
+  };
+
+  const pauseRecording = async () =>{
+    if(pauseRecord){
+        setPauseRecord(false);
+        soundRef.current.resumeRecorder();
+    }else{
+        setPauseRecord(true);
+        soundRef.current.pauseRecorder();
+    }
+  }
+ 
+
+  const resetRecorderUI = () => {
+  // recording flags
+  setIsRecording(false);
+  setPauseRecord(false);
+  setRecordPosition(0);
+  setRecordingPath('');
+
+  // stop listeners safely
+  try {
+    soundRef.current.removeRecordBackListener();
+  } catch {}
+
+  // allow layout changes again
+  setTimeout(() => {
+    isLayoutChangingRef.current = false;
+  }, 300);
+};
+
+const onCancelRecord = async () => {
+  try {
+    await soundRef.current.stopRecorder();
+  } catch {}
+  finally {
+    resetRecorderUI(); // ✅ SAME RESET
+  }
+};
+
+  const onStopRecord = async () => {
+    try {
+    const path = await soundRef.current.stopRecorder();
+
+    const audioPath =
+      Platform.OS === 'android' ? path : recordingPath;
+
+    // 🔥 Optimistic UI
+    setMessages1(prev => [
+      {
+        id: String(Date.now()),
+        sender_type: 'user',
+        message: audioPath,
+        type: 'audio',
+        created_at: new Date().toISOString(),
+      },
+      ...prev,
+    ]);
+
+    } catch (e) {
+      Alert.alert('Stop record error', String(e));
+    } finally {
+        resetRecorderUI();
+    }
+  };
 
 
 
@@ -685,8 +800,7 @@ setTimeout(async () => {
                 break;
             case "audio":
                 console.log("Record Audio");
-                setIsRecording(true);
-                startRecording();
+                onStartRecord();
                 break;
             case "video":
                 console.log("Pick Video");
@@ -755,6 +869,7 @@ setTimeout(async () => {
                                 inverted
                                 onEndReached={loadMore}
                                 onEndReachedThreshold={0.4}
+                                removeClippedSubviews={false}
                                 ListFooterComponent={() => (loadingMore ? <View style={styles.loadingMore}><Text>Loading...</Text></View> : null)}
                             />
 
@@ -879,17 +994,23 @@ setTimeout(async () => {
                     onSelect={handleAttachmentSelect}
                 />
 
-                {isRecording ? (
-                    
-                    <AudioRecorderBar
-                        duration={recordTime}
-                        paused={paused}
-                        onCancel={()=>cancelRecording()}
-                        onPause={() => pauseRecording()}
-                        onSend={()=>sendAudio()}
-                    />
-                    
-                 ) : (
+                    {isRecording ? (
+                        <AudioRecorderBar
+                            duration={ms(recordPosition)}
+                            paused={pauseRecord}
+                            onCancel={
+                                   () =>{
+                                       setIsRecording(false)
+
+                                        onCancelRecord();
+                                   }
+                            }
+                            onPause={
+                                pauseRecording
+                            }
+                            onSend={onStopRecord}
+                        />
+                    ) : (
                     // 🔽 your existing inputBarWrap
                     null
                     )} 

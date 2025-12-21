@@ -8,7 +8,6 @@ import {
   ScrollView,
   TextInput,
   FlatList,
-  StatusBar,
   Platform,
   Dimensions,
   Pressable,
@@ -27,7 +26,7 @@ import KundliMatchIcon from '../../assets/icons/KundliMatchIcon';
 import FreeChatIcon from '../../assets/icons/FreeChatIcon';
 import AstrologyBlogIcon from '../../assets/icons/AstrologyBlogIcon';
 import { colors, Fonts } from '../../styles';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import {  useNavigation } from '@react-navigation/native';
 import PrivateIcon from '../../assets/icons/PrivateIcon';
 import SearchIcon from '../../assets/icons/SearchIcon';
 import VerifiedIcon from '../../assets/icons/VerifiedIcon';
@@ -46,12 +45,12 @@ import { RootState } from '../../redux/store';
 import { setUserDetails } from '../../redux/slices/userDetailsSlice';
 import { CustomDialogManager2 } from '../../utils/CustomDialog2';
 import { decryptData, secretKey } from '../../services/requests';
-import { useSocket } from "../../socket/SocketProvider";
 import WaitlistJoinedModal from '../../utils/WaitlistJoinedModal';
 import { socket } from '../../../socket';
 import IncomingChatModal from '../../utils/IncomingChatModal';
 import YellowWaitlistSheet from '../../utils/YellowWaitlistSheet';
 import { removeWaitListItem, setWaitList,updateWaitListItem } from '../../redux/slices/waitListSlice';
+import { getFcmTokenAfterLogin } from '../../firebase/fcmService';
 
 const features = [
   {id: 1, title: 'Daily Horoscope', icon: DailyHoroIcon },
@@ -103,6 +102,18 @@ useEffect(() => {
       getUserDetailsApi();
   }
 }, []);
+
+  useEffect(() => {
+    const initFCM = async () => {
+      const token = await getFcmTokenAfterLogin();
+      if (token) {
+        // 🔥 Send token to backend
+        // api.updateFcmToken(token);
+      }
+    };
+
+    initFCM();
+  }, []);
 
 
 useEffect(() => {
@@ -350,7 +361,12 @@ const callPanditApi = () => {
 
   <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
 
-    <Pressable style={styles.wrapper} onPress={() => navigation.push('SearchScreen')}>
+    <Pressable style={styles.wrapper} onPress={() => {
+      navigation.push('SearchScreen');
+      // navigation.push('ChatWindow', { astrologerId: 1,orderId:1 })
+      // navigation.push('SoundScreen')
+    }
+      }>
       {/* SEARCH BAR */}
       <View style={styles.searchContainer}>
         
@@ -567,6 +583,7 @@ const callPanditApi = () => {
       </View>
 
       <View style={{ height: 130 }} />  {/* Spacer to allow for bottom buttons */}
+       
 
   </ScrollView>
 
@@ -674,6 +691,9 @@ const callPanditApi = () => {
                 onCancel={handleCancelWait}
               />
           }
+
+
+                       
 
              <AppSpinner show={activity} />
         </SafeAreaView>

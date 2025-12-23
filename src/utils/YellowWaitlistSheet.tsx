@@ -24,11 +24,13 @@ const TRANSLATE_Y = MAX_HEIGHT - COLLAPSED_HEIGHT+50;
 type Props = {
   data: any[];
   onCancel: (item: any) => void;
+  onAccept: (item: any) => void;
 };
 
 export default function YellowWaitlistSheet({
   data,
   onCancel,
+  onAccept
 }: Props) {
   const translateY = useRef(new Animated.Value(TRANSLATE_Y)).current;
   const isOpen = useRef(false);
@@ -78,11 +80,7 @@ export default function YellowWaitlistSheet({
   };
 
   const renderItem = ({ item }: any) => {
-    const actionText = !item.is_accept
-  ? "Cancel"
-  : item.status === "pending"
-    ? "Accept"
-    : "Chat";
+    // Alert.alert("Items =="+JSON.stringify(item));
     return(
     <View style={styles.row}>
       <FastImage source={{ uri: item.profile }} style={styles.avatar} />
@@ -95,13 +93,27 @@ export default function YellowWaitlistSheet({
           {item.duration} mins.
         </Text>
       </View>
+      <View>
 
-      <TouchableOpacity style={{ alignItems: 'center',borderColor:'gray',borderRadius:10,borderWidth:1,paddingHorizontal:10,paddingVertical:5 }} onPress={() => onCancel(item)}>
-        {/* {item.is_accept?null:<Feather name="x-circle" size={22} color="#999" />} */}
-        <Text style={styles.subText}>
-          {actionText}
+      {item.is_accept && <TouchableOpacity style={{ alignItems: 'center',borderColor:'green',borderRadius:10,borderWidth:1,paddingHorizontal:10,paddingVertical:5 ,marginBottom:6}} onPress={() => onAccept(item)}>
+        <Text style={[styles.subText,{color:'green'}]}>
+          {"Accept"}
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity>}
+
+      {item.status === "pending" && <TouchableOpacity style={{ alignItems: 'center',borderColor:'red',borderRadius:10,borderWidth:1,paddingHorizontal:10,paddingVertical:5 }} onPress={() => onCancel(item)}>  
+        <Text style={[styles.subText,{color:'red'}]}>
+          {"Reject"}
+        </Text>
+      </TouchableOpacity>}
+
+         {item.status === "continue" && item.is_accept && <TouchableOpacity style={{ alignItems: 'center',borderColor:'green',borderRadius:10,borderWidth:1,paddingHorizontal:10,paddingVertical:5 }} onPress={() => onAccept(item)}>  
+        <Text style={[styles.subText,{color:'green'}]}>
+          {"Chat"}
+        </Text>
+      </TouchableOpacity>}
+      </View>
+
     </View>
   )};
 

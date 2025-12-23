@@ -14,7 +14,7 @@ import {
   Alert,
   useColorScheme
 } from 'react-native';
-
+import  NitroSound  from 'react-native-nitro-sound';
 import MenuIcon from '../../assets/icons/MenuIcon';
 import HelpIcon from '../../assets/icons/HelpIcon';
 import WalletIcon from '../../assets/icons/WalletIcon';
@@ -120,42 +120,11 @@ useEffect(() => {
   }, []);
 
 
-// useEffect(() => {
-//   if(ServiceConstants.User_ID!=null){
-//      dispatch(setUserDetails({id:ServiceConstants.User_ID}));
-//     socket.on(`wait_for_pandit`, (msg) => {
-//         console.log("wait_for_pandit--" + JSON.stringify(msg));
-//         setVisibleWaitList(true);
-//         setYellowWaitList(true);
-        
-//         dispatch(setWaitList(msg));
-        
-//     });
-//     socket.on(`pandit_accepted`, (msg) => {
-//          if(visibleWaitList)
-//         setVisibleWaitList(false);
-
-//          setTimeout(()=>{
-//             setPanditAcceptedData(msg);
-//             setIncomingVisible(true);
-//          },1000);
-//     });
-
-//     socket.on(`user_continue_order`, (msg) => {
-//         setYellowWaitList(true);
-//         dispatch(setWaitList(msg));
-
-//     });
-//   }
-// }, []);
-
 useEffect(() => {
 
     if (!ServiceConstants.User_ID) return;
 
     onEvent('wait_for_pandit', (data:any) => {
-      // setAcceptAlertData((prev) => upsertArrayByOrderId(prev, data));
-      // Alert.alert("wait_for_pandit"+JSON.stringify(data));
        setVisibleWaitList(true);
        setYellowWaitList(true);
        dispatch(setWaitList(data));
@@ -163,28 +132,49 @@ useEffect(() => {
 
     onEvent('pandit_accepted', (data:any) => {
       console.log("pandit_accepted"+JSON.stringify(data));
-        if(visibleWaitList)
-        setVisibleWaitList(false);
 
-        setYellowWaitList(true);
-        dispatch(setWaitList(data));
+            //   setPanditAcceptedData(data);
+            // setIncomingVisible(true);
+
+          setTimeout(()=>{
+               if(visibleWaitList)
+                setVisibleWaitList(false);
+
+                setYellowWaitList(true);
+                dispatch(setWaitList(data));
+         },1000);
 
         //  setTimeout(()=>{
         //     setPanditAcceptedData(data);
         //     setIncomingVisible(true);
         //  },1000);
 
-      // let count = 0;
-      // const playSound = () => {
-      //   if (count >= 3) return;
-      //   count++;
-      //   notificationSound.play();
-      //   notificationSound.once('end', () => {
-      //     setTimeout(playSound, 500);
-      //   });
-      // };
+      let count = 0;
+      const playSound = async() => {
+        if (count >= 3) return;
+        count++;
+            try {
+      // const uri =
+      // Platform.OS === 'android'
+      //   ? 'android.resource://com.astrotalkguru/raw/notification_sound'
+      //   : 'https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3';
+           const uri = 'https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3';   
+      const msg = await NitroSound.startPlayer(uri);
+      NitroSound.addPlayBackListener((e) => {
+      });
+      // Use the proper playback end listener
+      NitroSound.addPlaybackEndListener((e) => {
+        console.log('Playback completed', e);
+          setTimeout(playSound, 500);
+      });
+    } catch (error) {
+      console.error('Failed to start playback:', error);
+    } finally {
+      
+    }
 
-      // playSound();
+      };
+      playSound();
     });
 
     onEvent('user_continue_order', (data:any) => {
@@ -343,16 +333,6 @@ const callPanditApi = () => {
     }
 
     const handleCancelWait = (item: any) => {
-      if(item.status=="pending" && item.is_accept){
-        callChatAcceptApi(item.order_id,item.pandit_id);
-        dispatch(removeWaitListItem(item.id));
-      }else
-      if(item.is_accept){
-            navigation.push('ChatWindow', {
-              astrologerId:item.panditId,
-              orderId: item.orderId,
-            });
-      }else{
           Alert.alert(
             "Cancel Request",
             `Cancel chat with ${item.name}?`,
@@ -367,9 +347,19 @@ const callPanditApi = () => {
               },
             ]
           );
-      }
+        };
 
-};
+const handleAcceptChat = (item: any)=>{
+    if(item.status=="pending" && item.is_accept){
+        callChatAcceptApi(item.order_id,item.pandit_id);
+        dispatch(removeWaitListItem(item.id));
+      }else if(item.is_accept){
+        navigation.push('ChatWindow', {
+          astrologerId:item.panditId,
+          orderId: item.orderId,
+        });
+      }
+}
 
 
     return(
@@ -748,6 +738,7 @@ const callPanditApi = () => {
              <YellowWaitlistSheet
                 data={astroWaitlist}
                 onCancel={handleCancelWait}
+                onAccept={handleAcceptChat}
               />
           }
 

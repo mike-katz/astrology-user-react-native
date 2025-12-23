@@ -267,14 +267,13 @@ export default function OrderHistoryScreen() {
         <View style={styles.right}>
           <Text style={styles.date}>{formatted}</Text>
 
-
           {item.status === "continue" && item.is_accept && (
             <TouchableOpacity style={[styles.statusbtn, { borderColor: 'green' }]} onPress={()=>{
-                     navigation.push('ChatWindow', {
-                        astrologerId: item.pandit_id,
-                        orderId: item.order_id,
-                      });
-                     
+                  navigation.push('ChatWindow', {
+                    astrologerId: item.pandit_id,
+                    orderId: item.order_id,
+                  });
+                  dispatch(removeWaitListItem(item.id));   
             }}>
               <Text style={[styles.subText, { color: 'green' }]}>
                 {"Chat"}
@@ -282,39 +281,36 @@ export default function OrderHistoryScreen() {
             </TouchableOpacity>
           )}
 
-          {item.status === "pending" && (
-            <TouchableOpacity style={[styles.statusbtn, { borderColor: 'gray' }]}
-              onPress={() => {
-                  updateOrderItem(item.id, {
-                    is_accept: false,
-                    status: "cancel",
-                  });
-                callChatCancelApi(item.order_id);
 
-                dispatch(removeWaitListItem(item.id));
-              }}>
-              <Text style={[styles.subText, { color: 'gray' }]}>
-                {"Cancel"}
-              </Text>
-            </TouchableOpacity>
-          )}
 
-          {item.status === "continue" && !item.is_accept && (
-            <TouchableOpacity style={[styles.statusbtn, { borderColor: colors.primaryColor }]}
+          {item.status === "pending" && item.is_accept && (
+            <TouchableOpacity style={[styles.statusbtn, { borderColor: 'green' }]}
               onPress={() => {
                   updateOrderItem(item.id, {
                     is_accept: true,
                     status: "continue",
                   });
                 callChatAcceptApi(item.order_id, item.pandit_id);
-                dispatch(updateWaitListItem({
-                                      id: item.id,
-                                      changes: {
-                                        is_accept: true,
-                                      },}));
+                dispatch(removeWaitListItem(item.id));                      
               }}>
-              <Text style={[styles.subText, { color: colors.primaryColor }]}>
+              <Text style={[styles.subText, { color: 'green' }]}>
                 {"Accept"}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+           {item.status === "pending" && (
+            <TouchableOpacity style={[styles.statusbtn, { borderColor: 'red' }]}
+              onPress={() => {
+                  updateOrderItem(item.id, {
+                    is_accept: false,
+                    status: "cancel",
+                  });
+                callChatCancelApi(item.order_id);
+                dispatch(removeWaitListItem(item.id));
+              }}>
+              <Text style={[styles.subText, { color: 'red' }]}>
+                {"Reject"}
               </Text>
             </TouchableOpacity>
           )}

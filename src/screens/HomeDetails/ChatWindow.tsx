@@ -170,14 +170,6 @@ useEffect(() => {
         callChatDetailsApi();
     }, []);
 
-    // useEffect(() => {
-
-    //     remainingTime = useCountdown(endTime, () => {
-    //     console.log("⏰ Chat finished");
-    //     // 👉 chat close logic here
-    //     });
-        
-    // }, [endTime]);
 
      
 
@@ -315,74 +307,7 @@ useEffect(() => {
         setMessages1(prev => [newMsg, ...prev]);
     };
 
-    // useEffect(() => {
-    //      console.log("🔌 Connecting socket from ChatWindow...");
     
-    //    if(!socket.connected){
-    //         socket.connect();
-    //         socket.on('connect', onConnect);
-    //     }
-
-    //     setIsConnected(true);
-    //     socket.emit("go_online", {
-    //         orderId,
-    //         from_id: ServiceConstants.User_ID,
-    //         to_id: astrologerId,
-    //         type: "user",
-    //     });
-    //     socket.on(`go_online`, (data) => {
-    //         console.log("go online--" + JSON.stringify(data));
-    //     });
-
-    //     socket.on('online', (data) => {
-    //         setIsOnline(true);
-    //     });
-
-    //     socket.on('offline', (data) => {
-    //         setIsOnline(false);
-    //     });
-
-    //     // 1. go_online = {id, type}
-    //     // 2. ⁠typing = {from_type, from_id, to_type, to_id}
-    //     // 3. ⁠stop_typing = {from_type, from_id, to_type, to_id}
-
-    //     // socket.on(`typing`, (data) => setTypingUser(data.from_id || data.from));
-    //     socket.on(`typing`, (data) => setTypingUser(true));
-    //     socket.on(`stop_typing`, () => setTypingUser(false));
-    //     socket.on(`receive_message`, (msg) => {
-    //         console.log("receive message--" + JSON.stringify(msg));
-    //         if (Array.isArray(msg)) {
-    //             // ✅ msg is an array of messages
-    //             msg.forEach((m) => {
-    //                 addMessage(m);
-    //             });
-    //         } else if (msg && typeof msg === 'object') {
-    //             // ✅ msg is a single message object
-    //             addMessage(msg);
-    //         }
-    //     });
-
-    //     function onConnect() {
-    //         setIsConnected(true);
-    //         console.log('socket connected', socket.id);
-    //         socket.emit(`go_online`, { orderId: orderId, from_id: ServiceConstants.User_ID, to_id: astrologerId, type: "user" });
-    //     }
-
-    //     // function onDisconnect() {
-    //     //     setIsConnected(false);
-    //     //     console.log('socket disconnected', socket.id);
-    //     // }
-
-    //     return () => {
-    //         console.log('🔥 ChatWindow unmount → disconnect socket');
-    //         // socket.off('connect', onConnect);
-    //         // socket.off('disconnect', onDisconnect);
-    //         socket.off(`typing`);
-    //         socket.off(`stop_typing`);
-    //         socket.off(`receive_message`);
-    //         socket.off(`go_online`);
-    //     };
-    // }, []);
 
 
 useEffect(() => {

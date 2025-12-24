@@ -30,6 +30,10 @@ export const Apis = {
   chatCancelOrder:`${BASE_URL}order/cancelOrder`,
   forceEndChat:`${BASE_URL}chat/forceEndChat`,
   endChat:`${BASE_URL}chat/endChat`,
+  getProfileList: `${BASE_URL}profile`,
+  createProfile: `${BASE_URL}profile`,
+  deleteProfile: `${BASE_URL}profile?`,
+  editProfile: `${BASE_URL}profile/update`,
 };
 
 export const Events = {};

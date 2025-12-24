@@ -36,8 +36,16 @@ const waitListSlice = createSlice({
       const id = action.payload;
       state.waitlist = state.waitlist.filter(item => item.id !== id);
     },
+    removeWaitListItemOrder: (state, action) => {
+        if (!state.waitlist.length) return;
+
+        const orderId = action.payload;
+        state.waitlist = state.waitlist.filter(
+          item => item.order_id !== orderId
+        );
+      },
   },
 });
 
-export const { setWaitList ,updateWaitListItem,removeWaitListItem} = waitListSlice.actions;
+export const { setWaitList ,updateWaitListItem,removeWaitListItem,removeWaitListItemOrder} = waitListSlice.actions;
 export default waitListSlice.reducer;

@@ -49,6 +49,36 @@ export const updateProfileAction = async (data: any) => {
   return response;
 };
 
+export const createProfileAction = async (data: any) => {
+  const body: any = {};
+  body['name'] = data.name;
+  body['gender'] = data.gender;
+  body['dob'] = data.dob;
+  body['dot'] = data.birthTime;
+  body['birth_place'] = data.birthPlace;
+  const response = await postRequest({ body, url: Apis.createProfile});
+  return response;
+};
+export const editProfileAction = async (data: any) => {
+  const body: any = {};
+  body['profileId'] = data.profileId;
+  body['name'] = data.name;
+  body['gender'] = data.gender;
+  body['dob'] = data.dob;
+  body['dot'] = data.birthTime;
+  body['birth_place'] = data.birthPlace;
+  const response = await postRequest({ body, url: Apis.editProfile});
+  return response;
+};
+
+export const deleteProfileAction = async (profileId: any) => {
+  const body: any = {};
+  body['profileId'] = profileId;
+
+  const response = await getRequest({ body, url: Apis.deleteProfile,method:"delete"});
+  return response;
+};
+
 
 export const verifyOtp = async (data: any) => {
   const body: any = {};
@@ -103,6 +133,22 @@ export const getPandit = async (page:any) => {
   body['limit'] = 20;
   const response = await getRequest({
     url: Apis.getPandit,
+    header: headerWithBearer(),
+    body,
+  });
+  const result = response;
+  if(result.success == true){
+    return result;
+  } else {
+    return result;
+  }
+  return null;
+};
+
+export const getProfileList = async () => {
+  const body: any = {};
+  const response = await getRequest({
+    url: Apis.getProfileList,
     header: headerWithBearer(),
     body,
   });
@@ -293,10 +339,11 @@ export const sendMessageAudioApi = async (files: any,orderId:any) => {
   return null;
 };
 
-export const createOrderApi = async (panditID: any,type:string) => {
+export const createOrderApi = async (panditID: any,profileId:any,type:string) => {
   const body: any = {};
   body['panditId'] = panditID;
   body['type'] = type;
+  body['profile_id'] = profileId;
   const response = await postRequest({ body, url: Apis.createOrder });
     const result = JSON.parse(response);
     if(result.success == true){

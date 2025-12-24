@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import FastImage from "react-native-fast-image";
 import Feather from "react-native-vector-icons/Feather";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { AppSpinner } from "../../utils/AppSpinner";
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors, Fonts } from "../../styles";
@@ -148,9 +148,33 @@ export default function OrderHistoryScreen() {
       setPage(prev => prev + 1);
     }
   };
+  // useEffect(() => {
+  //   callOrderListApi();
+  // }, [page]);
+
   useEffect(() => {
+  if (page > 1) {
     callOrderListApi();
-  }, [page]);
+  }
+}, [page]);
+
+useFocusEffect(
+  useCallback(() => {
+    // Reset everything when screen is focused
+    setOrders([]);
+    setPage(1);
+    setLoadingMore(false);
+    setRefreshing(false);
+
+    // Call API for first page
+    callOrderListApi();
+
+    return () => {
+      // optional cleanup
+    };
+  }, [])
+);
+
 
   const handleBack = () => navigation.goBack?.();
 
@@ -259,9 +283,13 @@ export default function OrderHistoryScreen() {
         <View style={styles.body}>
           <Text style={styles.name}>{item.name || 'Astrologer'}</Text>
           <Text style={styles.message} numberOfLines={1}>
-            {item.lastmessage}
+            {item.message}
           </Text>
-          <Text>{item.status}</Text>
+          {item.status === "cancel" &&<Text style={[styles.status, { color:'red',borderColor: 'red' }]}>{item.status?.toUpperCase()}</Text>}
+          {item.status === "pending" &&<Text style={[styles.status, { color:'#baab28',borderColor: '#baab28' }]}>{item.status?.toUpperCase()}</Text>}
+          {item.status === "completed" || item.status === "continue" &&<Text style={[styles.status, { color:'green',borderColor: 'green' }]}>{item.status?.toUpperCase()}</Text>}
+          {item.status === "continue" && item.is_accept &&<Text style={[styles.subText,{color:'green'}]}>Your chat is inprogress.</Text>}
+          {item.status === "pending" && <Text style={[styles.subText,{color:'red'}]}>Wait for pandit to accept your chat request.</Text>}
         </View>
 
         <View style={styles.right}>
@@ -273,7 +301,11 @@ export default function OrderHistoryScreen() {
                     astrologerId: item.pandit_id,
                     orderId: item.order_id,
                   });
-                  dispatch(removeWaitListItem(item.id));   
+                  updateOrderItem(item.id, {
+                    is_accept: true,
+                    status: "continue",
+                  });
+                  // dispatch(removeWaitListItem(item.id));   
             }}>
               <Text style={[styles.subText, { color: 'green' }]}>
                 {"Chat"}
@@ -291,7 +323,7 @@ export default function OrderHistoryScreen() {
                     status: "continue",
                   });
                 callChatAcceptApi(item.order_id, item.pandit_id);
-                dispatch(removeWaitListItem(item.id));                      
+                // dispatch(removeWaitListItem(item.id));                      
               }}>
               <Text style={[styles.subText, { color: 'green' }]}>
                 {"Accept"}
@@ -824,6 +856,17 @@ const styles = StyleSheet.create({
     color: "#666",
     marginTop: 2,
     fontFamily: Fonts.Medium
+  },
+  status: {
+    marginTop:6,
+    width:'50%',
+    alignItems: 'center',
+    borderColor: 'gray',
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    textAlign:'center'
   },
   statusbtn: {
     marginTop: 10,

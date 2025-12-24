@@ -9,11 +9,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  SafeAreaView,
   StatusBar,
 } from 'react-native';
 import { colors } from '../styles';
-
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 const {width} = Dimensions.get('window');
 const GRID_GAP = 12;
 const NUM_COLUMNS = 4;

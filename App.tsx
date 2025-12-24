@@ -49,6 +49,7 @@ import OrderHistoryScreen from './src/screens/HomeDetails/OrderHistoryScreen';
 import KundliMatchingScreen from './src/screens/HomeDetails/KundliMatchingScreen';
 import { SocketProvider } from './src/socket/SocketProvider';
 import { SoundScreen } from './src/utils/SoundScreen';
+import CreateProfileScreen from './src/screens/HomeDetails/CreateProfile';
 
 
  // Types for navigation
@@ -76,6 +77,7 @@ import { SoundScreen } from './src/utils/SoundScreen';
    SettingsScreen:undefined;
    OrderHistoryScreen:undefined;
    KundliMatchingScreen:undefined;
+   CreateProfileScreen:undefined;
  };
  
  type AuthStackParamList = {
@@ -240,7 +242,12 @@ const RootNavigator = ({ initialRoute }: { initialRoute: keyof RootStackParamLis
     <RootStack.Screen
         name="KundliMatchingScreen"
         component={KundliMatchingScreen}
-        options={{ headerShown: false }} />    
+        options={{ headerShown: false }} />  
+
+       <RootStack.Screen
+        name="CreateProfileScreen"
+        component={CreateProfileScreen}
+        options={{ headerShown: false }} />       
 
            <RootStack.Screen
         name="SoundScreen"

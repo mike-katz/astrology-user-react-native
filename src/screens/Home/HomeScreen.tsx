@@ -24,7 +24,6 @@ import DailyHoroIcon from '../../assets/icons/DailyHoroIcon';
 import FreeKundliIcon from '../../assets/icons/FreeKundliIcon';
 import KundliMatchIcon from '../../assets/icons/KundliMatchIcon';
 import FreeChatIcon from '../../assets/icons/FreeChatIcon';
-import AstrologyBlogIcon from '../../assets/icons/AstrologyBlogIcon';
 import { colors, Fonts } from '../../styles';
 import {  useIsFocused, useNavigation } from '@react-navigation/native';
 import PrivateIcon from '../../assets/icons/PrivateIcon';
@@ -46,12 +45,13 @@ import { setUserDetails } from '../../redux/slices/userDetailsSlice';
 import { CustomDialogManager2 } from '../../utils/CustomDialog2';
 import { decryptData, secretKey } from '../../services/requests';
 import WaitlistJoinedModal from '../../utils/WaitlistJoinedModal';
-import { socket } from '../../../socket';
 import IncomingChatModal from '../../utils/IncomingChatModal';
 import YellowWaitlistSheet from '../../utils/YellowWaitlistSheet';
-import { removeWaitListItem, setWaitList,updateWaitListItem } from '../../redux/slices/waitListSlice';
+import { removeWaitListItem, removeWaitListItemOrder, setWaitList,updateWaitListItem } from '../../redux/slices/waitListSlice';
 import { getFcmTokenAfterLogin } from '../../firebase/fcmService';
 import { useSocket } from '../../socket/SocketProvider';
+import ProfileSelector from '../HomeDetails/ProfileSelector';
+import { setProfileList } from '../../redux/slices/profileListSlice';
 
 
 const features = [
@@ -91,6 +91,7 @@ const [activity, setActivity] = useState<boolean>(false);
 const [astrologers, setAstrologers] = useState([]);
 const [showWallet, setShowWallet] = useState(false); //For Wallet
 const [selectedName, setSelectedName] = useState<string>(""); 
+const [selectedId, setSelectedId] = useState<string>("");
 const [walletBalance, setWalletBalance] = useState<number>(0);
  const userDetailsData = useSelector((state: RootState) => state.userDetails.userDetails);
  const astroWaitlist = useSelector((state: RootState) => state.waitList.waitlist);
@@ -99,6 +100,8 @@ const [walletBalance, setWalletBalance] = useState<number>(0);
  const [yellowWaitListV, setYellowWaitList] = useState<boolean>(false);
  const [incomingVisible, setIncomingVisible] = useState(false);
  const [panditAcceptedData, setPanditAcceptedData] = useState<any>([]);
+
+const [profileSelector, setProfileSelector] = useState(false);
 
 useEffect(() => {
   callPanditApi();
@@ -130,67 +133,122 @@ useEffect(() => {
        dispatch(setWaitList(data));
     });
 
-    onEvent('pandit_accepted', (data:any) => {
-      console.log("pandit_accepted"+JSON.stringify(data));
+    // onEvent('pandit_accepted', (data:any) => {
+    //   console.log("pandit_accepted"+JSON.stringify(data));
 
-            //   setPanditAcceptedData(data);
-            // setIncomingVisible(true);
+    //         //   setPanditAcceptedData(data);
+    //         // setIncomingVisible(true);
 
-          setTimeout(()=>{
-               if(visibleWaitList)
-                setVisibleWaitList(false);
+    //       setTimeout(()=>{
+               
+    //             setVisibleWaitList(false);
 
-                setYellowWaitList(true);
-                dispatch(setWaitList(data));
-         },1000);
+    //             setYellowWaitList(true);
+    //             dispatch(setWaitList(data));
+    //      },1000);
 
-        //  setTimeout(()=>{
-        //     setPanditAcceptedData(data);
-        //     setIncomingVisible(true);
-        //  },1000);
+    //     //  setTimeout(()=>{
+    //     //     setPanditAcceptedData(data);
+    //     //     setIncomingVisible(true);
+    //     //  },1000);
 
-      let count = 0;
-      const playSound = async() => {
-        if (count >= 3) return;
-        count++;
-            try {
-      // const uri =
-      // Platform.OS === 'android'
-      //   ? 'android.resource://com.astrotalkguru/raw/notification_sound'
-      //   : 'https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3';
-           const uri = 'https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3';   
-      const msg = await NitroSound.startPlayer(uri);
-      NitroSound.addPlayBackListener((e) => {
-      });
-      // Use the proper playback end listener
-      NitroSound.addPlaybackEndListener((e) => {
-        console.log('Playback completed', e);
-          setTimeout(playSound, 500);
-      });
-    } catch (error) {
-      console.error('Failed to start playback:', error);
-    } finally {
+    //   let count = 0;
+    //   const playSound = async() => {
+    //     if (count >= 3) return;
+    //     count++;
+    //         try {
+    //   // const uri =
+    //   // Platform.OS === 'android'
+    //   //   ? 'android.resource://com.astrotalkguru/raw/notification_sound'
+    //   //   : 'https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3';
+    //        const uri = 'https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3';   
+    //   const msg = await NitroSound.startPlayer(uri);
+    //   NitroSound.addPlayBackListener((e) => {
+    //   });
+    //   // Use the proper playback end listener
+    //   NitroSound.addPlaybackEndListener((e) => {
+    //     console.log('Playback completed', e);
+    //       setTimeout(playSound, 500);
+    //   });
+    // } catch (error) {
+    //   console.error('Failed to start playback:', error);
+    // } finally {
       
-    }
+    // }
 
-      };
-      playSound();
-    });
+    //   };
+    //   playSound();
+    // });
 
     onEvent('user_continue_order', (data:any) => {
       // Alert.alert("user_continue_order"+JSON.stringify(data));
-      if (!data?.order_id) return;
-
+      // if (!data?.order_id) return;
+      // setVisibleWaitList(true);
       setYellowWaitList(true);
-      dispatch(removeWaitListItem(data?.id));
+      setIncomingVisible(false);
+      // dispatch(removeWaitListItem(data?.id));
+      dispatch(setWaitList(data));
+
     });
 
     onEvent('order_completed', (data:any) => {
-      if (!data?.order_id) return;
-      dispatch(removeWaitListItem(data?.id));
+      // if (!data?.order_id) return;
+      // Alert.alert("order_completed"+JSON.stringify(data));
+      dispatch(removeWaitListItemOrder(data?.order_id));
+
+        setTimeout(()=>{
+            setIncomingVisible(false);
+            setVisibleWaitList(false);
+         },1000);
     });
   
   }, []);
+
+useEffect(() => {
+  const unsubscribe = onEvent('pandit_accepted', (data: any) => {
+    console.log('pandit_accepted', data);
+
+    setTimeout(() => {
+      setVisibleWaitList(false);   // ✅ WILL WORK
+
+      setPanditAcceptedData(data);
+      setIncomingVisible(true);
+      setYellowWaitList(true);
+      dispatch(setWaitList(data));
+    }, 1000);
+
+    playSoundRepeated();
+  });
+
+  return () => {
+    unsubscribe(); // 🔥 VERY IMPORTANT
+  };
+}, []);
+
+const playSoundRepeated = async () => {
+  let count = 0;
+
+  const playSound = async () => {
+    if (count >= 3) return;
+    count++;
+
+    try {
+      const uri =
+        'https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3';
+      await NitroSound.startPlayer(uri);
+
+      NitroSound.addPlaybackEndListener(() => {
+        setTimeout(playSound, 500);
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  playSound();
+};
+
+
 
 const callPanditApi = () => {
   setActivity(false)
@@ -203,8 +261,8 @@ const callPanditApi = () => {
   });
 }
 
-    const createOrderChatApi=(astrologerId:any)=>{
-        createOrderApi(astrologerId,"chat").then(response => {
+    const createOrderChatApi=(astrologerId:any,profileId:any)=>{
+        createOrderApi(astrologerId,profileId,"chat").then(response => {
         setActivity(false);
         console.log("Create Order response ==>" +response);
         const result = JSON.parse(response);
@@ -352,15 +410,31 @@ const callPanditApi = () => {
 const handleAcceptChat = (item: any)=>{
     if(item.status=="pending" && item.is_accept){
         callChatAcceptApi(item.order_id,item.pandit_id);
-        dispatch(removeWaitListItem(item.id));
-      }else if(item.is_accept){
+        // dispatch(removeWaitListItem(item.id));
+                  dispatch(
+                    updateWaitListItem({
+                      id: item.id,
+                      changes: {
+                        is_accept: true,
+                        status: "continue",
+                      },
+                    })
+                  );
+      }else if(item.status=="continue" && item.is_accept){
         navigation.push('ChatWindow', {
-          astrologerId:item.panditId,
-          orderId: item.orderId,
+          astrologerId:item.pandit_id,
+          orderId: item.order_id,
         });
       }
 }
-
+const handleCloseProfile = ()=>{
+  setProfileSelector(false);
+}
+const handleStartChat = (item:any)=>{
+  // Alert.alert("Selected Profile=="+JSON.stringify(item));
+  setProfileSelector(false);
+  createOrderChatApi(selectedId,item.id);
+}
 
     return(
     <SafeAreaProvider>
@@ -411,6 +485,7 @@ const handleAcceptChat = (item: any)=>{
       navigation.push('SearchScreen');
       // navigation.push('ChatWindow', { astrologerId: 1,orderId:1 })
       // navigation.push('SoundScreen')
+      // setProfileSelector(true);
     }
       }>
       {/* SEARCH BAR */}
@@ -504,13 +579,15 @@ const handleAcceptChat = (item: any)=>{
           </View> */}
           <TouchableOpacity style={styles.astroChatBtn} onPress={()=>{
               setSelectedName(item.name);
+              setSelectedId(item.id);
               if(ServiceConstants.User_ID==null){
                 navigation.reset({
                               index: 0,
                               routes: [{ name: 'AuthStack' }]
                             });
               }else{
-                createOrderChatApi(item.id);
+                setProfileSelector(true);
+                // createOrderChatApi(item.id);
               }
               
               // if(walletBalance==0){
@@ -668,7 +745,7 @@ const handleAcceptChat = (item: any)=>{
             fromScreen={'chat'}
           />
 
-          <SlideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
+          
 
            {visibleWaitList && astroWaitlist.length > 0 &&  
             <WaitlistJoinedModal
@@ -677,7 +754,7 @@ const handleAcceptChat = (item: any)=>{
               onClose={() => setVisibleWaitList(false)}
             />}
 
-              {incomingVisible && <IncomingChatModal
+              {incomingVisible &&<IncomingChatModal
                 visible={incomingVisible}
                 data={panditAcceptedData}
                 onAccept={() => {
@@ -693,15 +770,16 @@ const handleAcceptChat = (item: any)=>{
                   }
                   // Alert.alert("Pandit ID :"+panditDetails.pandit_id+"\n"+panditDetails.order_id);
                   callChatAcceptApi(panditDetails.order_id,panditDetails.pandit_id);
-                  dispatch(removeWaitListItem(panditDetails.id));
-                  // dispatch(
-                  //   updateWaitListItem({
-                  //     id: panditDetails.id,
-                  //     changes: {
-                  //       is_accept: true,
-                  //     },
-                  //   })
-                  // );
+                  // dispatch(removeWaitListItem(panditDetails.id));
+                  dispatch(
+                    updateWaitListItem({
+                      id: panditDetails.id,
+                      changes: {
+                        is_accept: true,
+                        status: "continue",
+                      },
+                    })
+                  );
                 }}
                 onReject={() => {
                   setIncomingVisible(false);
@@ -743,9 +821,17 @@ const handleAcceptChat = (item: any)=>{
           }
 
 
+            
+            <ProfileSelector
+                name={selectedName} 
+                visible={profileSelector} 
+                onClose={handleCloseProfile} 
+                onStartChat={handleStartChat} />
                        
 
              <AppSpinner show={activity} />
+
+             <SlideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
         </SafeAreaView>
     </SafeAreaProvider>
     );

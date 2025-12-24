@@ -11,7 +11,7 @@ import DatePicker from 'react-native-date-picker';
 import { colors, Fonts } from '../styles';
 
 export default function DatePickerDialog({ visible, onClose, onApply }:any) {
-const [birthDate, setBirthDate] = useState<Date|null>(new Date());
+const [birthDate, setBirthDate] = useState<Date>(new Date());
   return (
     <Modal transparent visible={visible} animationType="fade">
         <View style={styles.backdrop}>
@@ -39,7 +39,7 @@ const [birthDate, setBirthDate] = useState<Date|null>(new Date());
                 <TouchableOpacity
                     style={styles.applyBtn}
                     onPress={() => {
-                    onApply(birthDate);
+                    onApply(birthDate+"");
                     onClose();
                     }}
                 >

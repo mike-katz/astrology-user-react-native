@@ -3,12 +3,9 @@ import {
   Modal, Text, StyleSheet, View, Image,
   TouchableOpacity,
 } from "react-native";
-import IncomingChatRequest from "./IncomingChatRequest";
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import Feather from "react-native-vector-icons/Feather";
 import { Fonts } from "../styles";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
 import FastImage from "react-native-fast-image";
 type Props = {
   visible: boolean;

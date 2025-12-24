@@ -15,56 +15,183 @@ import { colors, Fonts } from "../../styles";
 import { BackIcon } from "../../assets/icons";
 import DatePickerDialog from "../../utils/DatePickerDialog";
 import TimePickerDialog from "../../utils/TimePickerDialog";
+import moment from "moment";
+import { CustomDialogManager2 } from "../../utils/CustomDialog2";
+import { decryptData, secretKey } from "../../services/requests";
+import { editProfileAction } from "../../redux/actions/UserActions";
+import { useDispatch } from "react-redux";
+import { updateProfileListItem } from "../../redux/slices/profileListSlice";
 
 const EditKundliScreen = ({ navigation, route }: any) => {
-     const colorScheme = useColorScheme();
     const { onSelect, item } = route.params;
+     const colorScheme = useColorScheme();
+     const dispatch = useDispatch();
     const [name, setName] = useState(item.name);
-    const [gender, setGender] = useState("Female");
+    const [gender, setGender] = useState(item.gender.toUpperCase());
     const [showGenderOptions, setShowGenderOptions] = useState(false);
-
-    const [date, setDate] = useState(new Date());
-    const [time, setTime] = useState(new Date());
+    const dateFormatted = moment(item.dob).format("DD MMM YY");
+    const timeFormate = moment(item.birth_time,"HH:mm:ss").format("hh:mm A");
+    const [date, setDate] = useState(dateFormatted);
+    const [time, setTime] = useState(timeFormate);
     const [showDatePickerModal, setShowDatePickerModal] = useState(false);
     const [showTimePickerModal, setShowTimePickerModal] = useState(false);
 
     const [dontKnowTime, setDontKnowTime] = useState(false);
 
-    const [location, setLocation] = useState(item.location);
-    interface KundliItem {
-        id: string;
-        name: string;
-        date: string;
-        location: string;
-    }
-    const onUpdate = () => {
-
-        const updatedData: KundliItem = {
-            id: item.id,
-            name: name,
-            date: date.toLocaleDateString("en-GB", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-            }) + ', ' + time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-            location: location,
-        };
-
-        Alert.alert(
-            "Updated Successfully",
-            "Your kundli details have been updated.",
-            [
-                {
-                    text: "OK",
-                    onPress: () => {
-                        onSelect(updatedData);
-                        navigation.goBack();
-                        console.log("OK Pressed");
-                    }
-                }
+    const [location, setLocation] = useState(item.birth_place);
+const validateForm = () => {
+  if (!name || name.trim().length === 0) {
+    
+    CustomDialogManager2.show({
+            title: 'Alert',
+            message: "Please enter name",
+            type:2,
+            buttons: [
+            {
+                text: 'Ok',
+                onPress: () => {
+                
+                },
+                style: 'default',
+            },
             ],
-            { cancelable: false }
-        );
+        });
+    return false;
+  }
+
+  if (!gender) {
+        CustomDialogManager2.show({
+            title: 'Alert',
+            message: "Please select gender",
+            type:2,
+            buttons: [
+            {
+                text: 'Ok',
+                onPress: () => {
+                
+                },
+                style: 'default',
+            },
+            ],
+        });
+    return false;
+  }
+
+  if (!date) {
+        CustomDialogManager2.show({
+        title: 'Alert',
+        message: "Please select date of birth",
+        type:2,
+        buttons: [
+        {
+            text: 'Ok',
+            onPress: () => {
+            
+            },
+            style: 'default',
+        },
+        ],
+    });
+    return false;
+  }
+
+  if (!dontKnowTime && !time) {
+            CustomDialogManager2.show({
+        title: 'Alert',
+        message: "Please select time of birth",
+        type:2,
+        buttons: [
+        {
+            text: 'Ok',
+            onPress: () => {
+            
+            },
+            style: 'default',
+        },
+        ],
+    });
+    return false;
+  }
+
+  if (!location || location.trim().length === 0) {
+    CustomDialogManager2.show({
+        title: 'Alert',
+        message: "Please select birth place",
+        type:2,
+        buttons: [
+        {
+            text: 'Ok',
+            onPress: () => {
+            
+            },
+            style: 'default',
+        },
+        ],
+    });
+    return false;
+  }
+
+  return true;
+};
+
+    const onUpdate = () => {
+        // ❌ Stop if validation fails
+        if (!validateForm()) return;
+
+        // ✅ Prepare payload (example)
+        const payload = {
+            profileId: item.id,
+            name:name,
+            gender: gender.toLowerCase(),
+            dob: moment(date, "DD MMM YY").format("YYYY-MM-DD"),
+            birthTime:moment(time, "hh:mm A").format("HH:mm:ss"),
+            birthPlace: location,
+        };
+        console.log("Update payload:", payload);
+
+        editProfileAction(payload).then(response => {
+            const result = JSON.parse(response);
+            if (result.success == true){
+                console.log("Profile Edited ==="+JSON.stringify(result));
+                CustomDialogManager2.show({
+                        title: 'Profile Updated',
+                        message: result.message,
+                        type:1,
+                        buttons: [
+                        {
+                            text: 'Ok',
+                            onPress: () => {
+                                navigation.goBack();
+                                dispatch(
+                                    updateProfileListItem({
+                                        id: item.id,
+                                        changes: { name: payload.name,gender:payload.gender,birth_time:payload.birthTime,dob:payload.dob,birth_place:payload.birthPlace },
+                                    })
+                                    );
+                            },
+                            style: 'default',
+                        },
+                        ],
+                    });
+                }else if(result.success == false){
+                    const result2 = decryptData(result.error,secretKey);
+                    const result3 = JSON.parse(result2);
+                        CustomDialogManager2.show({
+                            title: 'Alert',
+                            message: result3.message,
+                            type:2,
+                            buttons: [
+                            {
+                                text: 'Ok',
+                                onPress: () => {
+                                
+                                },
+                                style: 'default',
+                            },
+                            ],
+                        });
+                    }
+                    });
     };
     const openBirthPlaceScreen = () => {
         navigation.navigate("SearchPlaceScreen", {
@@ -131,11 +258,7 @@ const EditKundliScreen = ({ navigation, route }: any) => {
                         <TouchableOpacity style={styles.inputBox} onPress={() => setShowDatePickerModal(true)}>
                             <Feather name="calendar" size={18} color="#444" />
                             <Text style={styles.fieldText}>
-                                {date.toLocaleDateString("en-GB", {
-                                    day: "numeric",
-                                    month: "long",
-                                    year: "numeric",
-                                })}
+                                {date}
                             </Text>
                         </TouchableOpacity>
 
@@ -144,7 +267,7 @@ const EditKundliScreen = ({ navigation, route }: any) => {
                             <TouchableOpacity style={styles.inputBox} onPress={() => setShowTimePickerModal(true)}>
                                 <Feather name="clock" size={18} color="#444" />
                                 <Text style={styles.fieldText}>
-                                    {time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                    {time}
                                 </Text>
                             </TouchableOpacity>
                         )}
@@ -185,20 +308,20 @@ const EditKundliScreen = ({ navigation, route }: any) => {
                     <DatePickerDialog
                         visible={showDatePickerModal}
                         onClose={() => setShowDatePickerModal(false)}
-                        onApply={(dateData) => {
-                            console.log("User date:", dateData);
-                            console.log("ISO:", dateData.toISOString());
-                            console.log("Formatted:", dateData.toLocaleDateString());
-                            setDate(dateData);
+                        onApply={(date:any) => {
+                            console.log("User date:", date);
+                            const dateFormatted = moment(new Date(date)).format("DD MMM YY");
+                            setDate(dateFormatted);
                         }}
                             />
                     {/* TIME PICKER */}
                     <TimePickerDialog
                         visible={showTimePickerModal}
                         onClose={() => setShowTimePickerModal(false)}
-                        onApply={(dateData) => {
-                            console.log("User time:", dateData);
-                            setTime(dateData);
+                        onApply={(time:any) => {
+                            console.log("User time:", time);
+                             const timeFormate = moment(new Date(time),"HH:mm:ss").format("hh:mm A");
+                            setTime(timeFormate);
                             setDontKnowTime(false);
                         }}
                         />

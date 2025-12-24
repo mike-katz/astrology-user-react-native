@@ -48,6 +48,7 @@ import { RootState } from '../../redux/store';
 import { ServiceConstants } from '../../services/ServiceConstants';
 import { CustomDialogManager2 } from '../../utils/CustomDialog2';
 import { decryptData, secretKey } from '../../services/requests';
+import ProfileSelector from '../HomeDetails/ProfileSelector';
 
 const { width } = Dimensions.get('window');
 const BANNER_HEIGHT = 55;
@@ -64,6 +65,7 @@ const ChatScreen = () => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [showWallet, setShowWallet] = useState(false); //For Wallet
   const [selectedName, setSelectedName] = useState<string>("");
+  const [selectedId, setSelectedId] = useState<string>("");
   const [showFilterModal, setShowFilterModal] = useState(false); //For Sort and Filter
   const [activity, setActivity] = useState<boolean>(false);
   const [page, setPage] = useState(1);
@@ -121,6 +123,9 @@ const ChatScreen = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const activeFilterColor = filters.find(f => f.id === activeFilter)?.color || '#BABABA';
 
+  const [profileSelector, setProfileSelector] = useState(false);
+
+
   const callPanditApi = () => {
     setActivity(false);
     getPandit(page).then(response => {
@@ -154,8 +159,16 @@ const ChatScreen = () => {
     }
   };
 
-     const createOrderChatApi=(astrologerId:any)=>{
-          createOrderApi(astrologerId,"chat").then(response => {
+  const handleCloseProfile = ()=>{
+  setProfileSelector(false);
+}
+const handleStartChat = (item:any)=>{
+  setProfileSelector(false);
+  createOrderChatApi(selectedId,item.id);
+}
+
+     const createOrderChatApi=(astrologerId:any,profileId:any)=>{
+          createOrderApi(astrologerId,profileId,"chat").then(response => {
           setActivity(false);
           console.log("Create Order response ==>" +response);
           const result = JSON.parse(response);
@@ -236,13 +249,15 @@ const ChatScreen = () => {
           </View>
           <TouchableOpacity style={styles.chatButton} onPress={() => {
             setSelectedName(item.name);
+            setSelectedId(item.id);
               if(ServiceConstants.User_ID==null){
                 navigation.reset({
                               index: 0,
                               routes: [{ name: 'AuthStack' }]
                             });
               }else{
-                   createOrderChatApi(item.id); 
+                  //  createOrderChatApi(item.id); 
+                  setProfileSelector(true);
               }
             
             // setShowWallet(true)
@@ -463,6 +478,12 @@ const ChatScreen = () => {
           onClose={() => setShowFilterModal(false)}
           onApply={handleApplyFilters}
         />
+
+                    <ProfileSelector
+                name={selectedName} 
+                visible={profileSelector} 
+                onClose={handleCloseProfile} 
+                onStartChat={handleStartChat} />
 
         <SlideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
         <AppSpinner show={activity} />

@@ -129,38 +129,6 @@ export const postRequest = async ({ header = headerWithBearer(), body, url, meth
   }
 };
 
-
-// export const postRequest = async ({ header = headerWithBearer(), body, url, method = 'post' }) => {
-//   try {
-//     const controller = new AbortController();
-//     setTimeout(() => controller.abort(), signalAbortAfter);
-    
-//     const response = await fetch(url, {
-//       method: method,
-//       headers: header,
-//       body:{
-//         payload:encryptData(JSON.stringify(body),secretKey),
-//       }
-//       // signal: controller.signal
-//     });
-//     // console.log('response: ', response);
-//     // const result = await response.json();
-//     // console.log('result: ', result);
-//     // showLog(url, response.status, method, header, body, result);
-
-//     // if (response.status == 401) {
-//     //   return authError();
-//     // }
-//     return result;
-
-//     // return decryptData(result,secretKey);
-//   } catch (e) {
-//     if (e.message == 'Aborted') {
-//       return abortError();
-//     }
-//   }
-// };
-
 export const postMultiPartRequest = async ({ header = headerBearerMultiPart(), body, url ,method = 'post'}) => {
   try {
     

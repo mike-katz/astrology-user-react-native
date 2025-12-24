@@ -46,6 +46,7 @@ import { AudioMessage } from "../../utils/AudioMessage";
 import AudioRecorderBar from "../../utils/AudioRecorderBar";
 import { AudioEncoderAndroidType, AudioSourceAndroidType, AVEncoderAudioQualityIOSType, createSound } from "react-native-nitro-sound";
 import { useSocket } from "../../socket/SocketProvider";
+import OrderDetailsCard from "../../utils/OrderDetailsCard";
 
 type Message = {
     id: string;
@@ -101,6 +102,7 @@ export default function ChatWindow({ route }: any) {
     const isLayoutChangingRef = useRef(false);
     const [panditDetail, setPanditDetail] = useState<any>();
     const [endTime, setEndTime] = useState('');
+     const [showOrderCard, setShowOrderCard] = useState(false);
 
   
 useEffect(() => {
@@ -513,6 +515,7 @@ useEffect(() => {
             </View>
             );
         }
+        
 
         return (
             <View style={[styles.msgRow, isUser ? styles.rowRight : styles.rowLeft]}>
@@ -537,6 +540,8 @@ useEffect(() => {
                             style={styles.msgAvatarUser} />
                     </View>
                 )}
+
+                
             </View>
         );
     };
@@ -950,8 +955,9 @@ setTimeout(async () => {
     return (
 
         <SafeAreaProvider>
-            <SafeAreaView style={styles.safe}>
-                <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+            <SafeAreaView style={styles.safe} edges={['top']}>
+                <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
                     {/* Header */}
                     <View style={styles.header}>
 
@@ -1004,6 +1010,8 @@ setTimeout(async () => {
                                 onEndReached={loadMore}
                                 onEndReachedThreshold={0.4}
                                 removeClippedSubviews={false}
+                                keyboardDismissMode="interactive"
+                                keyboardShouldPersistTaps="handled"
                                 ListFooterComponent={() => (loadingMore ? <View style={styles.loadingMore}><Text>Loading...</Text></View> : null)}
                             />
 
@@ -1050,6 +1058,7 @@ setTimeout(async () => {
                                         <Text style={styles.continueText}>Continue Chat</Text>
                                     </TouchableOpacity></>)}
                         </View>
+
 
 
                         {/* Bottom input */}
@@ -1107,11 +1116,11 @@ setTimeout(async () => {
                                     <Feather name="send" size={18} color="#fff" />
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.endBtn} onPress={() => {
+                                {text.trim().length === 0 && (<TouchableOpacity style={styles.endBtn} onPress={() => {
                                     isChatEnded ? startChat() : endChat();
                                 }}>
                                     <Text style={[styles.endBtnText, { color: isChatEnded ? "#0B9E55" : "#D23B3B" }]}>{isChatEnded ? "Start" : "End"}</Text>
-                                </TouchableOpacity>
+                                </TouchableOpacity>)}
 
                         
 
@@ -1153,6 +1162,8 @@ setTimeout(async () => {
                     // 🔽 your existing inputBarWrap
                     null
                     )} 
+
+                    <OrderDetailsCard onClose={() => setShowOrderCard(false)} visible={showOrderCard} data={undefined} />
 
                 <AppSpinner show={activity} />
 
@@ -1297,6 +1308,7 @@ const styles = StyleSheet.create({
         borderTopWidth: 0.6,
         borderColor: "#EAEAEA",
         backgroundColor: "#fff",
+        paddingBottom:Platform.OS==='ios'?26:0
     },
     inputLeft: { flexDirection: "row", alignItems: "center" },
     iconBtn: { padding: 8 },

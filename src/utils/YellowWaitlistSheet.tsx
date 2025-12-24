@@ -92,10 +92,13 @@ export default function YellowWaitlistSheet({
         <Text style={styles.subText}>
           {item.duration} mins.
         </Text>
+       {item.status === "continue" && item.is_accept &&<Text style={[styles.subText,{color:'green'}]}>Your chat is inprogress.</Text>}
+       {item.status === "pending" && <Text style={[styles.subText,{color:'red'}]}>Wait for pandit to accept your chat request.</Text>}
+        
       </View>
       <View>
 
-      {item.is_accept && <TouchableOpacity style={{ alignItems: 'center',borderColor:'green',borderRadius:10,borderWidth:1,paddingHorizontal:10,paddingVertical:5 ,marginBottom:6}} onPress={() => onAccept(item)}>
+      {item.is_accept && item.status === "pending" && <TouchableOpacity style={{ alignItems: 'center',borderColor:'green',borderRadius:10,borderWidth:1,paddingHorizontal:10,paddingVertical:5 ,marginBottom:6}} onPress={() => onAccept(item)}>
         <Text style={[styles.subText,{color:'green'}]}>
           {"Accept"}
         </Text>

@@ -44,9 +44,8 @@ export const colors = {
   ButtunGradientColor: ["#800080", "#00000033"],
   Buttondisabled: "#B0B0B0",
   TextHeader: "#000000",
-  primaryColor:'#FBB917',
-  // primaryColor:'#800080',
-  primaryLightColor:'#FFFAE6'
+  primaryColor:"#febd19",//'#FBB917',
+  primaryLightColor:'#febd1920'
 };
 
 export const Fonts = {

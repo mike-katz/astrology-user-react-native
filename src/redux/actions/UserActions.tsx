@@ -79,6 +79,22 @@ export const deleteProfileAction = async (profileId: any) => {
   return response;
 };
 
+export const deleteChatMessageAction = async (id: any) => {
+  const body: any = {};
+  body['id'] = id;
+  const response = await getRequest({ body, url: Apis.deleteMessage,method:"delete"});
+  return response;
+};
+
+export const deleteChatOrderAction = async (orderId: any) => {
+  const body: any = {};
+  body['order_id'] = orderId;
+  const response = await getRequest({ body, url: Apis.deleteOrder,method:"delete"});
+  return response;
+};
+
+
+
 
 export const verifyOtp = async (data: any) => {
   const body: any = {};
@@ -251,11 +267,12 @@ export const getPanditReviewList = async (panditId:any,pagenum:any) => {
   return result;
 };
 
-export const getPanditChatMessages = async (orderId:any,pagenum:any) => {
+export const getPanditChatMessages = async (panditId:any,pagenum:any) => {
   const body: any = {};
-   body['orderId'] = orderId;
+  body['panditId'] = panditId;
+  //  body['orderId'] = orderId;
    body['page'] = pagenum;
-   body['limit'] = 20;
+   body['limit'] = 5;
   const response = await getRequest({
     url: Apis.getChatMessages,
     header: headerWithBearer(),
@@ -265,6 +282,21 @@ export const getPanditChatMessages = async (orderId:any,pagenum:any) => {
   return result;
 };
 
+export const getChatInfoOrder = async (orderId:any) => {
+  const body: any = {};
+  body['order_id'] = orderId;
+  const response = await getRequest({
+    url: Apis.infoOrder,
+    header: headerWithBearer(),
+    body,
+  });
+  const result = response;
+  if(result.success == true){
+    return result;
+  } else {
+    return result;
+  }
+};
 
 
 export const getChatDetails = async (panditId:any,orderId:any) => {

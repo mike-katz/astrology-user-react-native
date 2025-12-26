@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,8 +7,16 @@ import {
   Image,
   Dimensions,
   Modal,
+  Alert,
 } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
+import { decryptData, secretKey } from "../services/requests";
+import { deleteChatOrderAction, getChatInfoOrder } from "../redux/actions/UserActions";
+import moment from "moment";
+import FastImage from "react-native-fast-image";
+import { defaultProfile } from "../constant/AppConst";
+import { colors, Fonts } from "../styles";
+import { CustomDialogManager2 } from "./CustomDialog2";
 
 const { width } = Dimensions.get("window");
 
@@ -16,11 +24,60 @@ type Props = {
   visible: boolean;
   data: any; 
   onClose: () => void;
+  onDelete:() => void;
 };
 
-const OrderDetailsCard = ({ visible,data,onClose }: Props) => {
+const OrderDetailsCard = ({ visible,data,onClose,onDelete }: Props) => {
+const [selectedItem, setSelectedItem] = useState<any>({});
+
+  useEffect(()=>{
+    callInfoOrder();
+  },[visible]);
+
+  const callInfoOrder=()=>{
+        getChatInfoOrder(data.order_id).then(response => {
+            console.log("Info Order response ==>" + (response));
+            const result = JSON.parse(response);
+            if (result.success === true) {
+                setSelectedItem(result.data);
+            } else if (result.success === false) {
+                const result2 = decryptData(result.error, secretKey);
+                const result3 = JSON.parse(result2);
+                console.log("Info Order Error response ==>" + JSON.stringify(result3));
+            }
+        });
+  }
+  const callDeleteOrder = () =>{
+            deleteChatOrderAction(data.order_id).then(response => {
+            console.log("Info Order response ==>" + (response));
+            const result = JSON.parse(response);
+            if (result.success === true) {
+            Alert.alert(
+                "Success",
+                result.message,
+                [
+                {
+                    text: "Ok",
+                    onPress: () => {
+                        onDelete()
+                    },
+                },
+                ]
+            );
+                
+            } else if (result.success === false) {
+                const result2 = decryptData(result.error, secretKey);
+                const result3 = JSON.parse(result2);
+                console.log("Info Order Error response ==>" + JSON.stringify(result3));
+            }
+        });
+  }
+
+
   return (
-     <Modal visible={visible} transparent animationType="fade">
+     <Modal visible={visible} 
+     transparent 
+     animationType="fade">
     <View style={styles.overlay}>
       <View style={styles.card}>
 
@@ -31,39 +88,62 @@ const OrderDetailsCard = ({ visible,data,onClose }: Props) => {
 
         {/* Order Id */}
         <Text style={styles.orderId}>
-          Order Id: <Text style={styles.orderIdValue}>00000000406400</Text>
+          Order Id: <Text style={styles.orderIdValue}>#{selectedItem.order_id}</Text>
         </Text>
 
         {/* Content Row */}
         <View style={styles.row}>
           {/* Left Section */}
           <View style={styles.left}>
-            <Text style={styles.name}>Uttam Gajjar</Text>
+            <Text style={styles.name}>{selectedItem.name}</Text>
 
             <Text style={styles.date}>
-              24 Dec 2025, 10:53 PM
+              {moment(selectedItem.start_time).format("DD MMM YYYY, HH:mm A")}
             </Text>
 
-            <Text style={styles.status}>COMPLETED</Text>
+            <Text style={styles.status}>{selectedItem?.status?.toUpperCase()}</Text>
 
-            <Text style={styles.label}>Rate: ₹ 25/min</Text>
-            <Text style={styles.label}>Duration: 2 min</Text>
-            <Text style={styles.label}>Deduction: ₹ 50</Text>
+            <Text style={styles.label}>Rate: ₹ {selectedItem.rate}/min</Text>
+            <Text style={styles.label}>Duration: {selectedItem.duration} min</Text>
+            <Text style={styles.label}>Deduction: ₹ {selectedItem.deduction}</Text>
           </View>
 
           {/* Right Section */}
           <View style={styles.right}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>avata</Text>
+              {/* <Text style={styles.avatarText}>avata</Text> */}
+            
+            <FastImage
+                source={{uri:selectedItem.profile?selectedItem.profile:defaultProfile}}
+                style={styles.avatar}
+              />
             </View>
 
-            <Text style={styles.rate}>₹ 25/min</Text>
+            <Text style={styles.rate}>₹ {selectedItem.rate}/min</Text>
           </View>
         </View>
-
-        {/* Bottom Yellow Bar */}
-        <View style={styles.bottomBar} />
+        <TouchableOpacity onPress={()=>{
+            onClose()
+            Alert.alert(
+                "Delete Request",
+                `Are you sure you want to delete this order?`,
+                [
+                { text: "No" },
+                {
+                    text: "Yes",
+                    onPress: () => {
+                        callDeleteOrder();
+                    },
+                },
+                ]
+            );
+        }}>
+        <Text style={{fontSize:18,color:"red",fontFamily:Fonts.Medium,textDecorationLine: "underline",}}>Delete Order</Text>
+        </TouchableOpacity>
+    
       </View>
+
+    
     </View>
     </Modal>
   );
@@ -83,6 +163,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     overflow: "hidden",
+    borderBottomColor:colors.primaryColor,
+    borderBottomWidth:11
   },
 
   closeBtn: {
@@ -161,12 +243,5 @@ const styles = StyleSheet.create({
   rate: {
     fontSize: 14,
     color: "#555",
-  },
-
-  bottomBar: {
-    height: 6,
-    backgroundColor: "#F2E94E",
-    marginTop: 14,
-    borderRadius: 3,
   },
 });

@@ -26,6 +26,7 @@ import FacebookIcon from "../../assets/icons/FacebookIcon";
 import InstagramIcon from "../../assets/icons/InstagramIcon";
 import WebIcon from "../../assets/icons/WebIcon";
 import YoutubeIcon from "../../assets/icons/YoutubeIcon";
+import { defaultProfile } from "../../constant/AppConst";
 
 const { width } = Dimensions.get("window");
 
@@ -173,7 +174,7 @@ const buildNumber = DeviceInfo.getBuildNumber(); // e.g. "101"
                         }
                         onClose();}} style={{flexDirection:'row', alignItems:'center'}}>
                         <FastImage
-                            source={{ uri: userDetailsData.profile }}
+                            source={{ uri: userDetailsData.profile?userDetailsData.profile:defaultProfile }}
                             style={styles.profileImg}
                         />
                         <View>

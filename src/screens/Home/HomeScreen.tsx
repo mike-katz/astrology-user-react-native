@@ -52,6 +52,7 @@ import { getFcmTokenAfterLogin } from '../../firebase/fcmService';
 import { useSocket } from '../../socket/SocketProvider';
 import ProfileSelector from '../HomeDetails/ProfileSelector';
 import { setProfileList } from '../../redux/slices/profileListSlice';
+import { defaultProfile } from '../../constant/AppConst';
 
 
 const features = [
@@ -234,7 +235,7 @@ const playSoundRepeated = async () => {
 
     try {
       const uri =
-        'https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3';
+        'https://astrotalkguruji.s3.ap-south-1.amazonaws.com/avatars/notification_sound.wav';
       await NitroSound.startPlayer(uri);
 
       NitroSound.addPlaybackEndListener(() => {
@@ -445,8 +446,9 @@ const handleStartChat = (item:any)=>{
         {/* Profile Image wrapper */}
       <TouchableOpacity style={styles.profileWrapper} onPress={() => setMenuVisible(true)}>
         <FastImage
-          source={{uri:userDetailsData.profile}}
+          source={{uri:userDetailsData.profile?userDetailsData.profile:defaultProfile}}
           style={styles.profileImage}
+          
         />
           
           {/* Menu icon on bottom-right */}

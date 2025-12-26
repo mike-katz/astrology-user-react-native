@@ -8,14 +8,12 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
-    Image,
     Dimensions,
     Pressable,
     Share,
     useColorScheme,
     ImageBackground,
     Alert,
-    Modal,
     PermissionsAndroid,
 } from "react-native";
 import FastImage from "react-native-fast-image";
@@ -33,7 +31,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { ms, requestCameraPermission, requestGalleryPermission, StarRating, useCountdown } from "../../constant/Helper";
 import { AppSpinner } from "../../utils/AppSpinner";
-import { createOrderApi, endChatApi, forceEndChatApi, getChatDetails, getPanditChatMessages, sendMessageApi, sendMessageAudioApi } from "../../redux/actions/UserActions";
+import { createOrderApi, deleteChatMessageAction, endChatApi, forceEndChatApi, getChatDetails, getPanditChatMessages, sendMessageApi, sendMessageAudioApi } from "../../redux/actions/UserActions";
 import moment from "moment";
 import { ServiceConstants } from "../../services/ServiceConstants";
 import { decryptData, secretKey } from "../../services/requests";
@@ -47,6 +45,10 @@ import AudioRecorderBar from "../../utils/AudioRecorderBar";
 import { AudioEncoderAndroidType, AudioSourceAndroidType, AVEncoderAudioQualityIOSType, createSound } from "react-native-nitro-sound";
 import { useSocket } from "../../socket/SocketProvider";
 import OrderDetailsCard from "../../utils/OrderDetailsCard";
+import { MessageContextMenu } from "../../utils/MessageContextMenu";
+import { OrderSeparator } from "../../utils/OrderSeparator";
+import { defaultProfile } from "../../constant/AppConst";
+import { MessageStatus } from "../../utils/MessageStatus";
 
 type Message = {
     id: string;
@@ -56,12 +58,17 @@ type Message = {
     images?: string[];
     type: string;
     duration?: number;
+    order_id:string;
+    sender_delete:boolean;
+    receiver_delete:boolean;
+    status:string;
+    is_system_generate:boolean;
 };
 const { width } = Dimensions.get("window");
 
 export default function ChatWindow({ route }: any) {
 
-    const { astrologerId, orderId } = route.params;
+    const { astrologerId, orderId , isCompleted} = route.params;
     const navigation = useNavigation<any>();
     const colorScheme = useColorScheme();
     const {sendEvent, onEvent,isConnected } = useSocket();
@@ -102,7 +109,13 @@ export default function ChatWindow({ route }: any) {
     const isLayoutChangingRef = useRef(false);
     const [panditDetail, setPanditDetail] = useState<any>();
     const [endTime, setEndTime] = useState('');
-     const [showOrderCard, setShowOrderCard] = useState(false);
+    const [showOrderCard, setShowOrderCard] = useState(false);
+    const [showContextMenu, setShowContextMenu] = useState(false);
+    const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+    const [selectedItem, setSelectedItem] = useState<any>({});
+    const MENU_WIDTH = 140;
+    const { width: SCREEN_WIDTH } = Dimensions.get('window');
+    const EDGE_PADDING = 12;
 
   
 useEffect(() => {
@@ -131,36 +144,21 @@ useEffect(() => {
 
     const callChatMessagesApi = () => {
         setActivity(false);
-        getPanditChatMessages(orderId, page).then(response => {
+        getPanditChatMessages(astrologerId, page).then(response => {
             setActivity(false);
             console.log("Chat Messages response ==>" + (response) + "page no:-" + page);
             const result = JSON.parse(response);
             if (result.success === true) {
                 const messages = (result.data.results);
                 if (messages.length == 0) {
-                    console.log("Chat Messages lenght ==>" + messages.length);
                     setLoadingMore(false);
                 }
-                // setMessages1(prev => [...messages, ...prev]);
+                
                 setMessages1(prev => [...prev, ...messages]);
             } else if (result.success === false) {
                 const result2 = decryptData(result.error, secretKey);
                 const result3 = JSON.parse(result2);
                 console.log("Chat Messages Error response ==>" + JSON.stringify(result3));
-                // CustomDialogManager2.show({
-                //     title: 'Alert',
-                //     message: result3.message,
-                //     type: 2,
-                //     buttons: [
-                //         {
-                //             text: 'Ok',
-                //             onPress: () => {
-
-                //             },
-                //             style: 'default',
-                //         },
-                //     ],
-                // });
 
             }
 
@@ -182,7 +180,6 @@ useEffect(() => {
             console.log("Chat Details response ==>" + (response));
             const result = JSON.parse(response);
             if (result.success === true) {
-                console.log("Chat Details response222 ==>" + JSON.stringify(result));
                 setPanditDetail(result.data);
                 setAvatarUri(result.data.profile);
                 setPanditName(result.data.name);
@@ -218,7 +215,6 @@ useEffect(() => {
             console.log("Send Messages response ==>" + response);
             const result = JSON.parse(response);
             if (result.success === true) {
-                console.log("Send Messages response ==>" + JSON.stringify(result));
                    if (Array.isArray(result.data)) {
                         // ✅ msg is an array of messages
                         result.data.forEach((m:any) => {
@@ -304,6 +300,11 @@ useEffect(() => {
             message: msg.message,
             created_at: msg.created_at,
             type: msg.type,
+            order_id:msg.order_id,
+            sender_delete:msg.sender_delete,
+            receiver_delete:msg.receiver_delete,
+            status:msg.status,
+            is_system_generate:msg.is_system_generate,
         };
 
         setMessages1(prev => [newMsg, ...prev]);
@@ -478,7 +479,13 @@ useEffect(() => {
     };
 
 
-    const renderMessage = ({ item }: { item: Message }) => {
+
+    const renderMessage = ({ item ,index}: { item: Message, index: number}) => {
+        const prevItem = messages1[index+1];
+        const currentOrderId = item?.order_id ?? null;
+        const prevOrderId = prevItem?.order_id ?? null;
+        const isNewOrder = currentOrderId !== prevOrderId;
+
         if ((item as any).sender_type === "system") {
             const formatted = moment(new Date()).format("HH:mm");
             return (
@@ -489,10 +496,28 @@ useEffect(() => {
             );
         }
 
+    
+
         const isUser = item.sender_type === "user"
         const formatted = moment(item.created_at).format("HH:mm");
         if (item.type === 'audio') {
             return (
+            <View>
+            {/* 🔹 Show Order Card when order changes */}
+            {isNewOrder && (
+                <OrderSeparator
+                    orderId={item.order_id}
+                    dateAt={item.created_at}
+                    onPress={() => {
+                    console.log('Order separator pressed', item.order_id);
+                    }}
+                    onInfoPress={() => {
+                        setSelectedItem(item);
+                        setShowOrderCard(true);
+
+                    }}
+                />
+                )}
             <View style={[styles.msgRow, isUser ? styles.rowRight : styles.rowLeft]}>
                 {!isUser && (
                 <FastImage source={{ uri: avatarUri }} style={styles.msgAvatar} />
@@ -508,17 +533,58 @@ useEffect(() => {
 
                 {isUser && <View style={{ width: 46, }} >
                         <FastImage
-                            
-                            source={DEFAULT_AVATAR}
+                            source={{uri:defaultProfile}}
                             style={styles.msgAvatarUser} />
                     </View>}
             </View>
+
+            </View>
             );
         }
-        
+        const isDeleted =
+  item.sender_delete || (!isUser && item.receiver_delete);
 
         return (
-            <View style={[styles.msgRow, isUser ? styles.rowRight : styles.rowLeft]}>
+        <View>
+            {/* 🔹 Show Order Card when order changes */}
+            {isNewOrder && (
+                <OrderSeparator
+                    orderId={item.order_id}
+                    dateAt={item.created_at}
+                    onPress={() => {
+                    console.log('Order separator pressed', item.order_id);
+                    }}
+                    onInfoPress={() => {
+                        setSelectedItem(item);
+                        setShowOrderCard(true);
+                    }}
+                />
+                )}
+            <Pressable 
+            style={[styles.msgRow, isUser ? styles.rowRight : styles.rowLeft]} onLongPress={(e)=>{
+                    if(!isDeleted){
+                        setSelectedItem(item);
+                        const { pageX, pageY } = e.nativeEvent;
+                        let xPos: number;
+                        if (isUser) {
+                            // Left bubble → open menu to RIGHT
+                            xPos = pageX;
+                        } else {
+                            // Right bubble → open menu to LEFT
+                            xPos = pageX + MENU_WIDTH;
+                        }
+
+                        const safeX = Math.max(
+                            EDGE_PADDING,
+                            Math.min(xPos, SCREEN_WIDTH - MENU_WIDTH - EDGE_PADDING)
+                        );
+                        setContextMenuPos({
+                        x: safeX,
+                        y: pageY,
+                        });
+                        setSelectedItem(item);
+                        setShowContextMenu(true);
+                    }}}>
                 {!isUser && (
                     <FastImage source={{ uri: avatarUri }} style={styles.msgAvatar} />
                 )}
@@ -528,8 +594,12 @@ useEffect(() => {
                 )}
 
                 {item.type == 'text' && item.message ? (<View style={[styles.msgBubble, isUser ? styles.bubbleUser : styles.bubbleAgent]}>
-                    <Text style={[styles.msgText, isUser ? styles.msgTextUser : styles.msgTextAgent]}>{item.message}</Text>
+                    <Text style={[styles.msgText, isUser ? styles.msgTextUser : styles.msgTextAgent,isDeleted && styles.deletedText,item.is_system_generate && styles.deletedText]}>{isDeleted?"You deleted this message.":item.message}</Text>
+                    
+                    <View style={{flexDirection:'row',alignSelf: "flex-end"}}>
                     <Text style={styles.msgTime}>{formatted}</Text>
+                     {isUser && <View style={{marginLeft:6,marginBottom:-6}}><MessageStatus message={"sent"} /></View>}
+                     </View>
                 </View>) : null}
 
                 {isUser && (
@@ -537,11 +607,13 @@ useEffect(() => {
                         <FastImage
                             //  source={dummyUri ? { uri: dummyUri } : DEFAULT_AVATAR}
                             source={DEFAULT_AVATAR}
+                            defaultSource={DEFAULT_AVATAR}
                             style={styles.msgAvatarUser} />
                     </View>
                 )}
 
                 
+            </Pressable>
             </View>
         );
     };
@@ -584,46 +656,6 @@ useEffect(() => {
         setMessage(data.review);
         setRatingStar(data.rating);
     };
-
-
-
-
-const sendAudio = async () => {
-    // try {
-    //     const path = await AudioRecorderPlayer.stopRecorder();
-    //     AudioRecorderPlayer.removeRecordBackListener();
-
-        // setIsRecording(false);
-    //     setPaused(false);
-
-    //     const audioFile = {
-    //         uri: Platform.OS === 'ios' ? path.replace('file://', '') : path,
-    //         name: `audio_${Date.now()}.mp3`,
-    //         type: 'audio/mpeg',
-    //     };
-
-    //     // 🔥 Send to backend
-    //     // sendMessageApi([audioFile], '', orderId, true);
-
-    //     // 🔥 Optimistic UI
-        // setMessages1(prev => [
-        //     {
-        //         id: String(Date.now()),
-        //         sender_type: 'user',
-        //         message: 'https://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3',
-        //         type: 'audio',
-        //         duration: Number(recordTime.split(':')[1]),
-        //         created_at: new Date().toISOString(),
-        //     },
-        //     ...prev,
-        // ]);
-
-    //     setRecordTime('0:00');
-    //     setAudioPath('');
-    // } catch (e) {
-    //     console.log('Send audio error', e);
-    // }
-};
 
   const requestPermissions = async () => {
     if (Platform.OS !== 'android') return true;
@@ -865,7 +897,6 @@ setTimeout(async () => {
  const remainingSeconds = useCountdown(endTime, () => {
     console.log("⏰ Chat finished");
     setIsChatEnded(true);
-    
     callForceEndChat();
 });
 
@@ -950,7 +981,31 @@ setTimeout(async () => {
         });
 
     }
+    const callDeleteChatMessage = () =>{
+            deleteChatMessageAction(selectedItem.id).then(response => {
+                console.log("Delete Messages response ==>" + (response));
+                const result = JSON.parse(response);
+                if (result.success === true) {
+            
+                setMessages1(prevMessages =>
+                    prevMessages.map(msg =>
+                        msg.id === selectedItem.id
+                        ? {
+                            ...msg,
+                            sender_delete: true,
+                            message: 'You deleted this message.',
+                            }
+                        : msg
+                    )
+                    );
+                } else if (result.success === false) {
+                    const result2 = decryptData(result.error, secretKey);
+                    const result3 = JSON.parse(result2);
+                    console.log("Delete Messages Error response ==>" + JSON.stringify(result3));
 
+                }
+            });
+    }
 
     return (
 
@@ -976,7 +1031,7 @@ setTimeout(async () => {
                         <View style={styles.headerTitle}>
                             <Text style={styles.headerName}>{panditName}</Text>
                             <Text style={styles.headerStatus}>{isOnline ? "Online" : "Offline"}</Text>
-                            <Text style={styles.headerStatus}>{remainingSeconds}</Text>
+                            <Text style={styles.headerStatus}>{isChatEnded?"":remainingSeconds}</Text>
                         </View>
                         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                             <TouchableOpacity onPress={() => { }} style={{ width: 30, height: 30, padding: 0, justifyContent: 'center' }}>
@@ -1011,7 +1066,7 @@ setTimeout(async () => {
                                 onEndReachedThreshold={0.4}
                                 removeClippedSubviews={false}
                                 keyboardDismissMode="interactive"
-                                keyboardShouldPersistTaps="handled"
+                                keyboardShouldPersistTaps="always"
                                 ListFooterComponent={() => (loadingMore ? <View style={styles.loadingMore}><Text>Loading...</Text></View> : null)}
                             />
 
@@ -1098,6 +1153,9 @@ setTimeout(async () => {
                                     placeholder="Write a message..."
                                     style={styles.input}
                                     multiline
+                                    textAlignVertical="center" 
+                                    maxLength={500}
+                                    scrollEnabled
                                     placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#666'}
                                     cursorColor={colors.primaryColor}
                                 />
@@ -1163,7 +1221,46 @@ setTimeout(async () => {
                     null
                     )} 
 
-                    <OrderDetailsCard onClose={() => setShowOrderCard(false)} visible={showOrderCard} data={undefined} />
+                <OrderDetailsCard 
+                    onClose={() => setShowOrderCard(false)} 
+                    visible={showOrderCard} 
+                    data={selectedItem}
+                    onDelete={()=>{
+                        setMessages1(prevMessages =>
+                        prevMessages.filter(msg => msg.order_id !== selectedItem.order_id)
+                        );
+                    }} />
+
+                <MessageContextMenu
+                    visible={showContextMenu}
+                    position={contextMenuPos}
+                    onClose={() => {
+                        setShowContextMenu(false);
+                        
+                    }}
+                    onDelete={() => {
+                        setShowContextMenu(false);
+                        
+                        Alert.alert(
+                            "Delete Request",
+                            `Are you sure you want to delete this message?`,
+                            [
+                            { text: "No" },
+                            {
+                                text: "Yes",
+                                onPress: () => {
+
+                                    callDeleteChatMessage();
+
+                               
+                        
+                                },
+                            },
+                            ]
+                        );
+ 
+                
+                    }}/>
 
                 <AppSpinner show={activity} />
 
@@ -1247,7 +1344,16 @@ const styles = StyleSheet.create({
     msgText: { fontSize: 14, lineHeight: 18, color: "#222", fontFamily: Fonts.Medium },
     msgTextUser: { color: "#222", fontFamily: Fonts.Medium },
     msgTextAgent: { color: "#222", fontFamily: Fonts.Medium },
-    msgTime: { fontSize: 10, color: "#888", marginTop: 6, alignSelf: "flex-end" },
+    deletedText: {
+    color: 'red',        
+    fontStyle: 'italic',
+    },
+    msgTime: { 
+        fontSize: 10, 
+        color: "#888", 
+        alignSelf: "flex-end",
+        fontFamily:Fonts.Medium
+     },
 
     systemRow: {
         alignItems: "center",
@@ -1321,9 +1427,16 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#E8E8E8",
         paddingHorizontal: 12,
-        justifyContent: "center",
+        // justifyContent: "center",
+        justifyContent: "flex-start",
     },
-    input: { fontSize: 15, padding: 0, paddingVertical: 6 },
+    input: { 
+        fontSize: 15, 
+        // padding: 0, 
+        // paddingVertical: 6,
+         paddingVertical: 8,
+ paddingHorizontal: 0,
+     },
     inputRight: { flexDirection: "row", alignItems: "center" },
     sendBtn: {
         backgroundColor: "#0CA789",
@@ -1386,5 +1499,6 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontWeight: '700',
     },
+ 
 
 });

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
   Modal,
+  Platform,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { deleteProfileAction, getProfileList } from '../../redux/actions/UserActions';
@@ -160,10 +161,13 @@ useFocusEffect(
 
         <View style={styles.right}>
           <TouchableOpacity onPress={()=>{
-            setSelectedId(item.id);
+                  if(Platform.OS==='ios')
+                    onClose()
+
+                  setSelectedId(item.id);
                   navigation.navigate("EditKundliScreen", {
                     onSelect: (data: any) => {
-
+                        
                     },item,
                     });
           }}>

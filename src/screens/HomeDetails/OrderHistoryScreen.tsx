@@ -272,7 +272,12 @@ useFocusEffect(
     const formatted = moment(item.created_at).format("DD-MMM-YYYY");
     return (
       <TouchableOpacity style={styles.row} onPress={() => {
-
+        {item.status === "completed" &&(
+            navigation.push('ChatWindow', {
+              astrologerId: item.pandit_id,
+              orderId: item.order_id,
+            })
+        )}
 
       }}>
         <View style={styles.avatarWrap}>
@@ -285,9 +290,10 @@ useFocusEffect(
           <Text style={styles.message} numberOfLines={1}>
             {item.message}
           </Text>
-          {item.status === "cancel" &&<Text style={[styles.status, { color:'red',borderColor: 'red' }]}>{item.status?.toUpperCase()}</Text>}
-          {item.status === "pending" &&<Text style={[styles.status, { color:'#baab28',borderColor: '#baab28' }]}>{item.status?.toUpperCase()}</Text>}
-          {item.status === "completed" || item.status === "continue" &&<Text style={[styles.status, { color:'green',borderColor: 'green' }]}>{item.status?.toUpperCase()}</Text>}
+          <Text style={[styles.status]}>{item.status?.toUpperCase()}</Text>
+          {/* {item.status === "cancel" &&<Text style={[styles.status, { color:'red',borderColor: 'red' }]}>{item.status?.toUpperCase()}</Text>} */}
+          {/* {item.status === "pending" &&<Text style={[styles.status, { color:'#baab28',borderColor: '#baab28' }]}>{item.status?.toUpperCase()}</Text>} */}
+          {item.status === "completed" &&<Text style={[styles.status, { color:'green',borderColor: 'green' }]}>{item.status?.toUpperCase()}</Text>}
           {item.status === "continue" && item.is_accept &&<Text style={[styles.subText,{color:'green'}]}>Your chat is inprogress.</Text>}
           {item.status === "pending" && <Text style={[styles.subText,{color:'red'}]}>Wait for pandit to accept your chat request.</Text>}
         </View>

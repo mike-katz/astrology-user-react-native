@@ -36,3 +36,5 @@ export const ScreenTitles = {
     }
     return false;
   };
+
+  export const defaultProfile = "https://astrotalkguruji.s3.ap-south-1.amazonaws.com/avatars/1.jpeg";

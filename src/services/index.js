@@ -21,7 +21,8 @@ export const Apis = {
   getPanditReviewList: `${BASE_URL}pandit/reviewList?`,
   applyFollow: `${BASE_URL}follow`,
   getFollowing: `${BASE_URL}follow?`,
-  getChatMessages: `${BASE_URL}chat/getOrderDetail?`,
+  // getChatMessages: `${BASE_URL}chat/getOrderDetail?`,
+  getChatMessages: `${BASE_URL}chat/messages?`,
   createOrder:`${BASE_URL}order/create`,
   getOrderList:`${BASE_URL}order/list?`,
   sendMessage:`${BASE_URL}chat/sendMessage`,
@@ -34,6 +35,10 @@ export const Apis = {
   createProfile: `${BASE_URL}profile`,
   deleteProfile: `${BASE_URL}profile?`,
   editProfile: `${BASE_URL}profile/update`,
+  deleteMessage: `${BASE_URL}chat/delete?`,
+  deleteOrder: `${BASE_URL}order/delete?`,
+  infoOrder: `${BASE_URL}review/detail?`,
+  
 };
 
 export const Events = {};

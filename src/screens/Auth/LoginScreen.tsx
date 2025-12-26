@@ -114,7 +114,7 @@ export default function LoginScreen() {
       {/* Logo */}
       <View style={styles.logoContainer}>
         <Image
-          source={require('../../assets/icons/astrologer_logo.png')}
+          source={require('../../assets/icons/AstroGurujiLogoApp.png')}
           style={styles.logo}
         />
       </View>
@@ -124,7 +124,7 @@ export default function LoginScreen() {
        {/* Subtitle */}
         {/* <Text style={styles.subtitle}>GURUJI</Text> */}
 
-        <AstrotalkGuruji />
+        {/* <AstrotalkGuruji /> */}
 
 
 <View style={styles.yellowSection}>
@@ -265,7 +265,6 @@ const styles = StyleSheet.create({
   logo: {
     height: 150,
     width: 150,
-    borderRadius: 75,
   },
   title: {
     fontFamily: Fonts.SemiBold,

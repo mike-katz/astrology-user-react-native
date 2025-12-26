@@ -50,6 +50,7 @@ import KundliMatchingScreen from './src/screens/HomeDetails/KundliMatchingScreen
 import { SocketProvider } from './src/socket/SocketProvider';
 import { SoundScreen } from './src/utils/SoundScreen';
 import CreateProfileScreen from './src/screens/HomeDetails/CreateProfile';
+import ProfileSelector from './src/screens/HomeDetails/ProfileSelector';
 
 
  // Types for navigation
@@ -252,7 +253,8 @@ const RootNavigator = ({ initialRoute }: { initialRoute: keyof RootStackParamLis
            <RootStack.Screen
         name="SoundScreen"
         component={SoundScreen}
-        options={{ headerShown: false }} />    
+        options={{ headerShown: false }} />
+
         
     </RootStack.Navigator>)
 };

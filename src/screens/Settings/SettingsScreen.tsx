@@ -19,7 +19,10 @@ import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { BackIcon } from "../../assets/icons";
 import { logoutUser } from "../../redux/actions/UserActions";
 import ManagePrivacyModal from "./ManagePrivacyModal";
-import { socket } from "../../../socket";
+import { useDispatch } from "react-redux";
+import { resetUserData } from "../../redux/slices/userDetailsSlice";
+import { resetWaitListData } from "../../redux/slices/waitListSlice";
+import { clearProfileList } from "../../redux/slices/profileListSlice";
 
 export default function SettingsScreen({ navigation }: any) {
     // toggles
@@ -29,7 +32,7 @@ export default function SettingsScreen({ navigation }: any) {
     const [activity, setActivity] = useState<boolean>(false);
     const [showPrivacy, setShowPrivacy] = useState(false);
 
-
+const dispatch = useDispatch();
     // handlers - replace with real logic / API
     const handleToggleAstromallChat = (v: boolean) => setAstromallChat(v);
     const handleToggleLiveEvents = (v: boolean) => setLiveEvents(v);
@@ -63,10 +66,9 @@ export default function SettingsScreen({ navigation }: any) {
                 {
                     text: "OK", onPress: () => {
                         logoutUser(true);
-                        // 🔥 DISCONNECT SOCKET HERE
-                        if(socket.connected) {
-                            socket.disconnect();
-                        }
+                        dispatch(resetUserData());
+                        dispatch(resetWaitListData());
+                        dispatch(clearProfileList());
                         navigation.reset({
                             index: 0,
                             routes: [{ name: 'AuthStack' }],
@@ -117,7 +119,7 @@ export default function SettingsScreen({ navigation }: any) {
                     <Text style={s.headerTitle}>Settings</Text>
 
                     <TouchableOpacity style={s.backBtn}>
-                        <BackIcon size={16} onPress={handleBack} />
+                        <BackIcon size={16} onPress={handleBack} tintColor={undefined} />
                     </TouchableOpacity>
                     <View style={{ position: 'absolute', width: '100%', height: .1, backgroundColor: '#7B7B7B', bottom: 0 }}></View>
                 </Animated.View>

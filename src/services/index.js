@@ -45,7 +45,9 @@ export const Apis = {
   deleteAllPayments:`${BASE_URL}payment/all`,
   deleteSingleTransaction:`${BASE_URL}payment/single/transaction`,
   deleteAllTransaction:`${BASE_URL}payment/all-transaction`,
-  
+  updateToken:`${BASE_URL}user/updateToken`,
+  userBalance:`${BASE_URL}user`,
+  addReview:`${BASE_URL}review`,
 };
 
 export const Events = {};

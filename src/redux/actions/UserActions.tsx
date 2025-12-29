@@ -143,6 +143,17 @@ export const getUserDetails = async () => {
   return null;
 };
 
+export const getBalance = async () => {
+  const body: any = {};
+  const response = await getRequest({
+    url: Apis.userBalance,
+    header: headerWithBearer(),
+    body,
+  });
+  const result = response;
+  return result;
+};
+
 export const getPandit = async (page:any) => {
   const body: any = {};
   body['page'] = page;
@@ -193,7 +204,21 @@ export const getPanditDetails = async (panditId:any) => {
   }
   return null;
 };
-
+export const addReviewApi = async (panditID: any,msg:any,orderId:any,rating:any) => {
+  const body: any = {};
+  body['panditId'] = panditID;
+  body['message'] = msg;
+  body['orderId'] = orderId;
+  body['rating'] = rating;
+  const response = await postRequest({ body, url: Apis.addReview });
+    const result = JSON.parse(response);
+    if(result.success == true){
+        return response;
+    }else{
+      return response;
+    }
+  return null;
+};
 export const applyUserFollowApi = async (panditID: any) => {
   const body: any = {};
   body['panditId'] = panditID;
@@ -468,6 +493,18 @@ export const chatCancelOrderApi = async (orderId: any) => {
     }
   return null;
 };
+export const updateTokenApi = async (token: any) => {
+  const body: any = {};
+  body['token'] = token;
+  const response = await postRequest({ body, url: Apis.updateToken});
+    const result = JSON.parse(response);
+    if(result.success == true){
+        return response;
+    }else{
+      return response;
+    }
+  return null;
+};
 
 export const getOrderList = async (pagenum:any) => {
   const body: any = {};
@@ -494,6 +531,7 @@ export const logoutUser = (isLogout:any) => {
   ServiceConstants.setBearerToken(null);
   ServiceConstants.setUserReferralCode(null);
   ServiceConstants.setUserphone(null);
+  
   if(!isLogout)
   RNRestart.Restart();
 };

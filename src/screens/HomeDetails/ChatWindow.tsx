@@ -31,7 +31,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { ms, requestCameraPermission, requestGalleryPermission, StarRating, useCountdown } from "../../constant/Helper";
 import { AppSpinner } from "../../utils/AppSpinner";
-import { createOrderApi, deleteChatMessageAction, endChatApi, forceEndChatApi, getChatDetails, getPanditChatMessages, sendMessageApi, sendMessageAudioApi } from "../../redux/actions/UserActions";
+import { addReviewApi, createOrderApi, deleteChatMessageAction, endChatApi, forceEndChatApi, getBalance, getChatDetails, getPanditChatMessages, sendMessageApi, sendMessageAudioApi } from "../../redux/actions/UserActions";
 import moment from "moment";
 import { ServiceConstants } from "../../services/ServiceConstants";
 import { decryptData, secretKey } from "../../services/requests";
@@ -51,6 +51,8 @@ import { defaultProfile } from "../../constant/AppConst";
 import { MessageStatus } from "../../utils/MessageStatus";
 import ProfileSelector from "./ProfileSelector";
 import { removeWaitListItemOrder } from "../../redux/slices/waitListSlice";
+import { ReviewSeparator } from "../../utils/ReviewSeparator";
+import { setUserDetails } from "../../redux/slices/userDetailsSlice";
 
 type Message = {
     id: string;
@@ -120,8 +122,11 @@ export default function ChatWindow({ route }: any) {
     const EDGE_PADDING = 12;
     const [profileSelector, setProfileSelector] = useState(false);
     const [selectedName, setSelectedName] = useState<string>(""); 
-    
-
+    const [isLowBalance, setLowBalance] = useState(false);
+    const SHOW_LOW_BALANCE_AT = 120; // 2 minutes
+    const [selectedAmount, setSelectedAmount] = useState('100');
+    const isLowBalanceRef = useRef(false);
+    const [refreshRowId, setRefreshRowId] = useState<string | null>(null);
   
 useEffect(() => {
   if (isRecording) {
@@ -425,7 +430,7 @@ useEffect(() => {
         setMessages1(prev => [
             ...prev,
             {
-                id: String(Date.now()),
+                id: `system_${orderId}`,
                 sender_type: "system",
                 message: "You started the chat",
                 created_at: new Date().toISOString()
@@ -472,12 +477,18 @@ useEffect(() => {
 
 
     const renderMessage = ({ item ,index}: { item: Message, index: number}) => {
+        const shouldRefresh = item.id === refreshRowId;
         const prevItem = messages1[index+1];
         const currentOrderId = item?.order_id ?? null;
         const prevOrderId = prevItem?.order_id ?? null;
         const isNewOrder = currentOrderId !== prevOrderId;
 
-        if ((item as any).sender_type === "system") {
+        const nextItem = messages1[index-1];
+        const nextOrderId = nextItem?.order_id ?? null;
+        const isOrderCompleted =
+            currentOrderId && currentOrderId !== nextOrderId;
+
+        if((item as any).sender_type === "system") {
             const formatted = moment(new Date()).format("HH:mm");
             return (
                 <View style={styles.systemRow}>
@@ -487,16 +498,80 @@ useEffect(() => {
             );
         }
 
+
+        if(item.type==='recharge'){
+            const amountNum = Number(selectedAmount) || 0;
+            const gst = +(amountNum * 0.18).toFixed(2);
+            const payableAmount = +(amountNum + gst).toFixed(2);
+            return(
+                <View style={styles.lowBalanceCard}>
+  <Text style={styles.lowBalanceText}>
+    Low balance! Recharge to continue this chat
+  </Text>
+
+  {/* Amount buttons */}
+  <View style={styles.amountRow}>
+    {['50', '100', '200'].map((amt) => {
+      const selected = amt === selectedAmount;
+      return (
+        <TouchableOpacity
+          key={amt}
+          onPress={() => setSelectedAmount(amt)}
+          style={[
+            styles.amountBox,
+            selected && styles.amountBoxSelected,
+          ]}
+        >
+          <Text
+            style={[
+              styles.amountText,
+              selected && styles.amountTextSelected,
+            ]}
+          >
+            ₹ {amt}
+          </Text>
+        </TouchableOpacity>
+      );
+    })}
+  </View>
+
+  {/* Bill Row */}
+  <View style={styles.billRow}>
+    <View>
+      <Text style={styles.totalBillText}>Total Bill ₹ {payableAmount}</Text>
+      <Text style={styles.taxText}>Incl. all Taxes</Text>
+    </View>
+
+    <View style={styles.payUsingRow}>
+      <Text style={styles.payUsingText}>PAY USING</Text>
+      <Text style={styles.upiText}>UPI ▾</Text>
+    </View>
+  </View>
+
+  {/* Recharge Button */}
+  <TouchableOpacity style={styles.rechargeBtn} onPress={()=>{
+       navigation.push("PaymentDetailsScreen", {
+              amount: amountNum,
+              extra: "100",
+            });
+  }}>
+    <Text style={styles.rechargeBtnText}>Recharge Now</Text>
+  </TouchableOpacity>
+</View>
+
+            );
+        }
+
     
 
         const isUser = item.sender_type === "user"
         const formatted = moment(item.created_at).format("HH:mm");
-                const isDeleted =
+        const isDeleted =
   item.sender_delete || (!isUser && item.receiver_delete);
 
         if (item.type === 'audio') {
             return (
-            <Pressable onLongPress={(e)=>{
+            <Pressable key={`${item.id}-${shouldRefresh}`} onLongPress={(e)=>{
                     if(!isDeleted){
                         setSelectedItem(item);
                         const { pageX, pageY } = e.nativeEvent;
@@ -520,6 +595,8 @@ useEffect(() => {
                        
                         setShowContextMenu(true);
                     }}}>
+
+           
             {/* 🔹 Show Order Card when order changes */}
             {isNewOrder && (
                 <OrderSeparator
@@ -540,13 +617,24 @@ useEffect(() => {
                 <FastImage source={{ uri: avatarUri }} style={styles.msgAvatar} />
                 )}
 
-                <AudioMessage
+                {!isDeleted && <AudioMessage
                     audioId={item.id}
                     uri={item.message}
                     isUser={isUser}
                     activeAudioId={activeAudioId}
                     onRequestPlay={(id) => setActiveAudioId(id)}
-                    />
+                    />}
+
+     { isDeleted  ? (<View style={[styles.msgBubble, isUser ? styles.bubbleUser : styles.bubbleAgent]}>
+                    <Text style={[styles.msgText, isUser ? styles.msgTextUser : styles.msgTextAgent,isDeleted && styles.deletedText,item.is_system_generate && styles.deletedText]}>{isDeleted?"You deleted this message.":item.message}</Text>
+                    
+                    <View style={{flexDirection:'row',alignSelf: "flex-end"}}>
+                    <Text style={styles.msgTime}>{formatted}</Text>
+                     {isUser && <View style={{marginLeft:6,marginBottom:-6}}><MessageStatus message={"sent"} /></View>}
+                     </View>
+                </View>) : null}
+
+
 
                 {isUser && <View style={{ width: 46, }} >
                         <FastImage
@@ -555,13 +643,29 @@ useEffect(() => {
                     </View>}
             </View>
 
+                       {/* Review & Rating */}
+            {isOrderCompleted && index!=0 &&(
+                 <ReviewSeparator
+                    orderId={item.order_id}
+                    onPress={() => {
+                    console.log('Review separator pressed', item.order_id);
+                    }}
+                    onEdit={() => {
+
+                        setSelectedItem(item);
+                        setShowRateModal(true);
+                    }}
+                />
+            )}  
             </Pressable>
             );
         }
 
 
         return (
-        <View>
+        <View key={`${item.order_id}-${shouldRefresh}`}>
+
+
             {/* 🔹 Show Order Card when order changes */}
             {isNewOrder && (
                 <OrderSeparator
@@ -630,6 +734,21 @@ useEffect(() => {
 
                 
             </Pressable>
+            
+            {/* Review & Rating */}
+            {isOrderCompleted && index!=0 &&(
+            <ReviewSeparator
+                    orderId={item.order_id}
+                    onPress={() => {
+                    console.log('Review separator pressed', item.order_id);
+                    }}
+                    onEdit={() => {
+                        setSelectedItem(item);
+                        setShowRateModal(true);
+                    }}
+                />
+            )}
+    
             </View>
         );
     };
@@ -655,7 +774,6 @@ useEffect(() => {
     }
 
     const handleBack = () => {
-
         // socket.emit(`go_offline`, {
         //     orderId: orderId,
         //     // from_type: "user", from_id: ServiceConstants.User_ID,
@@ -663,14 +781,43 @@ useEffect(() => {
         // });
         navigation.goBack();
     }
-    const onEdit = () => {
-        setShowRateModal(true);
-    }
 
     const onSubmitRating = (data: any) => {
         console.log("Review Data → ", data);
-        setMessage(data.review);
-        setRatingStar(data.rating);
+        // setMessage(data.review);
+        // setRatingStar(data.rating);
+        
+    addReviewApi(astrologerId, data.review, data.data.order_id, data.rating).then(response => {
+            setActivity(false);
+            console.log("Send Messages response ==>" + response);
+            const result = JSON.parse(response);
+            if (result.success === true) {
+                setRefreshRowId(null);
+                setTimeout(() => {
+                setRefreshRowId(selectedItem.id);
+                }, 0);
+            } else if (result.success === false) {
+                const result2 = decryptData(result.error, secretKey);
+                const result3 = JSON.parse(result2);
+                console.log("Send Messages Error response ==>" + JSON.stringify(result3));
+                CustomDialogManager2.show({
+                    title: 'Alert',
+                    message: result3.message,
+                    type: 2,
+                    buttons: [
+                        {
+                            text: 'Ok',
+                            onPress: () => {
+
+                            },
+                            style: 'default',
+                        },
+                    ],
+                });
+
+            }
+        });
+
     };
 
   const requestPermissions = async () => {
@@ -910,11 +1057,31 @@ setTimeout(async () => {
 
 
 
- const remainingSeconds = useCountdown(endTime, () => {
+ const {remainingSeconds, secondsLeft} = useCountdown(endTime, () => {
     console.log("⏰ Chat finished");
+    setTimeout(() => {
     setIsChatEnded(true);
     callForceEndChat();
+    }, 2000);
 });
+useEffect(() => {
+    const showLowBalance = secondsLeft > 0 && secondsLeft <= SHOW_LOW_BALANCE_AT;
+    if(showLowBalance){
+        setLowBalance(true);
+        if(!isLowBalanceRef.current){
+            isLowBalanceRef.current=true;
+        setMessages1((p) => [
+        {
+            id: `low_balance_${orderId}`,
+            type:'recharge',
+            created_at: new Date().toISOString()
+        } as any,...p
+    ]);
+        }
+   
+    }
+}, [secondsLeft]);
+
 
     const callForceEndChat = () => {
         forceEndChatApi(orderId).then(response => {
@@ -922,17 +1089,18 @@ setTimeout(async () => {
             // console.log("End Chat Messages response ==>" + response);
             const result = JSON.parse(response);
             if (result.success === true) {
-
+                dispatch(removeWaitListItemOrder(orderId));
                 setIsChatEnded(true);
                 setMessages1((p) => [
-                    
                     {
-                        id: String(Date.now()),
+                        id: Date.now(),
                         sender_type: "system",
                         message: "You ended the chat",
                         created_at: new Date().toISOString()
                     } as any,...p
                 ])
+
+                 callBalance();
                 // console.log("End Chat Messages response ==>" + JSON.stringify(result));
             } else if (result.success === false) {
                 const result2 = decryptData(result.error, secretKey);
@@ -964,17 +1132,18 @@ setTimeout(async () => {
             const result = JSON.parse(response);
             if (result.success === true) {
                 dispatch(removeWaitListItemOrder(orderId));
+               
                 setIsChatEnded(true);
                 setMessages1((p) => [
                     
                     {
-                        id: String(Date.now()),
+                        id: Date.now(),
                         sender_type: "system",
                         message: "You ended the chat",
                         created_at: new Date().toISOString()
                     } as any,...p
                 ]);
-
+                callBalance();
             } else if (result.success === false) {
                 const result2 = decryptData(result.error, secretKey);
                 const result3 = JSON.parse(result2);
@@ -996,6 +1165,13 @@ setTimeout(async () => {
             }
         });
 
+    }
+
+    const callBalance =()=>{
+      getBalance().then(response => {
+        const result = JSON.parse(response);
+        dispatch(setUserDetails(result.data));
+      });
     }
     const callDeleteChatMessage = () =>{
             deleteChatMessageAction(selectedItem.id).then(response => {
@@ -1120,7 +1296,7 @@ const handleStartChat = (item:any)=>{
                             <FlatList
                                 ref={flatRef}
                                 data={messages1}
-                                keyExtractor={(item, index) => `${item.id}-${index}`}
+                                keyExtractor={(item) => String(item.id)}
                                 renderItem={renderMessage}
                                 contentContainerStyle={styles.chatContent}
                                 showsVerticalScrollIndicator={false}
@@ -1140,15 +1316,15 @@ const handleStartChat = (item:any)=>{
                             {/* Share row (centered) */}
                             {isChatEnded && (
                                 <>
-                                    <View style={styles.shareRowWrap}>
+                                    {/* <View style={styles.shareRowWrap}>
                                         <TouchableOpacity onPress={handleShare} style={styles.shareBtn}>
                                             <Feather name="message-circle" size={18} color="#0B9E55" />
                                             <Text style={styles.shareBtnText}>Share with your friends</Text>
                                         </TouchableOpacity>
-                                    </View>
+                                    </View> */}
 
                                     {/* Rating */}
-                                    <View style={styles.ratingRow}>
+                                    {/* <View style={styles.ratingRow}>
                                         <View style={{ marginRight: 40 }}>
                                             <View style={{ marginLeft: 5, flexDirection: "row", alignItems: "center" }}>
                                                 <StarRating size={20} rating={ratingStar} />
@@ -1158,9 +1334,21 @@ const handleStartChat = (item:any)=>{
                                         <TouchableOpacity onPress={onEdit} style={{ flex: 1, position: 'absolute', right: 20, top: 10 }}>
                                             <Feather name="edit-2" size={16} color="#555" />
                                         </TouchableOpacity>
-                                    </View>
+                                    </View> */}
 
                                     {/* Promo / continue chat card */}
+                                    <View style={{backgroundColor:'#fff',marginBottom:35,margin:5,borderRadius:12,paddingVertical:10,  // iOS shadow (emboss / raised)
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.15,
+  shadowRadius: 4,
+
+  // Android shadow
+  elevation: 4,
+
+  // Optional border for crisp look
+  borderWidth: 1,
+  borderColor: '#EEE',}}>
                                     <View style={styles.promoCard}>
                                         <FastImage source={{ uri: avatarUri }} style={styles.promoAvatar} />
                                         <View style={styles.promoBody}>
@@ -1176,7 +1364,9 @@ const handleStartChat = (item:any)=>{
                                         setProfileSelector(true);
                                     }}>
                                         <Text style={styles.continueText}>Continue Chat</Text>
-                                    </TouchableOpacity></>)}
+                                    </TouchableOpacity>
+                                    </View>
+                                    </>)}
 
                           {/* Bottom input */}
                           {!isChatEnded && (
@@ -1243,6 +1433,7 @@ const handleStartChat = (item:any)=>{
 
                 <RateAstrologerModal
                     visible={showRateModal}
+                    data={selectedItem}
                     onClose={() => setShowRateModal(false)}
                     onSubmit={onSubmitRating}
                 />
@@ -1314,6 +1505,23 @@ const handleStartChat = (item:any)=>{
  
                 
                     }}/>
+
+
+                    {isLowBalance && <View style={styles.topLowBalanceWrap}>
+                    <View style={styles.timerRow}>
+                        <Feather name="clock" size={14} color="#E53935" />
+                    </View>
+                    <Text style={styles.lowBalanceTopText} numberOfLines={1}>
+                        Low Balance! <Text style={{color:'#000'}}>Your chat will end soon</Text>
+                    </Text>
+
+
+                    <TouchableOpacity style={styles.rechargeTopBtn} onPress={()=>{
+                        navigation.push('AddMoneyScreen')
+                    }}>
+                        <Text style={styles.rechargeTopBtnText}>Recharge</Text>
+                    </TouchableOpacity>
+                    </View>}
 
               <ProfileSelector
                 name={selectedName} 
@@ -1453,10 +1661,9 @@ const styles = StyleSheet.create({
 
     // promo card
     promoCard: {
-        marginHorizontal: 10,
-        marginTop: 6,
+        marginHorizontal: 6,
         backgroundColor: "#FFF6D9",
-        borderRadius: 10,
+        borderRadius: 12,
         padding: 12,
         flexDirection: "row",
         alignItems: "center",
@@ -1470,9 +1677,8 @@ const styles = StyleSheet.create({
     promoOld: { textDecorationLine: "line-through", color: "#a33", marginLeft: 6 },
 
     continueBtn: {
-        marginHorizontal: 12,
-        marginTop: 10,
-        marginBottom: 12,
+        marginHorizontal: 6,
+        marginTop: 8,
         backgroundColor: "#F8D84E",
         borderRadius: 10,
         paddingVertical: 14,
@@ -1573,5 +1779,142 @@ const styles = StyleSheet.create({
         fontFamily:Fonts.Medium
     },
  
+topLowBalanceWrap: {
+ position:'absolute',
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#FFF4F4',
+  paddingHorizontal: 10,
+  paddingVertical: 10,
+  marginHorizontal: 10,
+  borderRadius: 9,
+  top: Platform.OS==="android"?'10%':'15%'
+},
+
+timerRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginRight: 6,
+},
+
+timerText: {
+  marginLeft: 4,
+  fontSize: 12,
+  color: '#E53935',
+  fontWeight: '600',
+   fontFamily:Fonts.Medium
+},
+
+lowBalanceTopText: {
+  flex: 1,
+  fontSize: 12,
+  color: '#E53935',
+  fontWeight: '500',
+  fontFamily:Fonts.Medium
+},
+
+rechargeTopBtn: {
+  backgroundColor: '#D32F2F',
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 6,
+},
+
+rechargeTopBtnText: {
+  color: '#fff',
+  fontSize: 12,
+  fontWeight: '600',
+   fontFamily:Fonts.Medium
+},
+
+lowBalanceCard: {
+    backgroundColor: '#fff',
+    marginVertical: 10,
+    padding: 12,
+    borderRadius: 12,
+    elevation: 3,
+  },
+
+  lowBalanceText: {
+    color: '#E53935',
+    fontSize: 14,
+    marginBottom: 10,
+    fontWeight: '500',
+  },
+
+  amountRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+
+  amountBox: {
+    width: '30%',
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+
+  amountBoxSelected: {
+    borderColor: '#000',
+  },
+
+  amountText: {
+    fontSize: 14,
+    color: '#000',
+  },
+
+  amountTextSelected: {
+    fontWeight: '700',
+  },
+
+  billRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+
+  totalBillText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+  },
+
+  taxText: {
+    fontSize: 12,
+    color: '#777',
+  },
+
+  payUsingRow: {
+    alignItems: 'flex-end',
+  },
+
+  payUsingText: {
+    fontSize: 10,
+    color: '#777',
+  },
+
+  upiText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#000',
+  },
+
+  rechargeBtn: {
+    backgroundColor: '#2E7D32',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+
+  rechargeBtnText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+  },
 
 });

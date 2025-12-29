@@ -169,8 +169,13 @@ export const useCountdown = (
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
 
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  // return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    return {
+    remainingSeconds: `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
+    secondsLeft,
+  };
 };
+
 
 
 
@@ -197,3 +202,7 @@ export const getStatusStyle = (status?: string) => {
       return { color: '#777' };    // fallback
   }
 };
+
+export function getRandomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}

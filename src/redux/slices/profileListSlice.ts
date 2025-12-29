@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+const initialState = {
+  profilelist: [] as any[],
+};
 const profileListSlice = createSlice({
   name: 'profileList',
-  initialState:{
-    profilelist: [] as any[],
-  },
+ initialState,
   reducers: {
       setProfileList(state, action) {
       const incoming = Array.isArray(action.payload)

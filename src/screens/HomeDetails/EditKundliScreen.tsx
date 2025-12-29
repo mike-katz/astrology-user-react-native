@@ -153,26 +153,48 @@ const validateForm = () => {
             const result = JSON.parse(response);
             if (result.success == true){
                 console.log("Profile Edited ==="+JSON.stringify(result));
-                CustomDialogManager2.show({
-                        title: 'Profile Updated',
-                        message: result.message,
-                        type:1,
-                        buttons: [
-                        {
-                            text: 'Ok',
-                            onPress: () => {
-                                navigation.goBack();
-                                dispatch(
-                                    updateProfileListItem({
-                                        id: item.id,
-                                        changes: { name: payload.name,gender:payload.gender,birth_time:payload.birthTime,dob:payload.dob,birth_place:payload.birthPlace },
-                                    })
-                                    );
-                            },
-                            style: 'default',
-                        },
-                        ],
-                    });
+
+                      Alert.alert(
+                                            "Profile Updated",
+                                            result.message,
+                                            [
+                                            
+                                            {
+                                                text: "Ok",
+                                                onPress: () => {
+                
+                                       navigation.goBack();
+                                        dispatch(
+                                            updateProfileListItem({
+                                                id: item.id,
+                                                changes: { name: payload.name,gender:payload.gender,birth_time:payload.birthTime,dob:payload.dob,birth_place:payload.birthPlace },
+                                            })
+                                            );
+                                                },
+                                            },
+                                            ]
+                                        );
+                
+                // CustomDialogManager2.show({
+                //         title: 'Profile Updated',
+                //         message: result.message,
+                //         type:1,
+                //         buttons: [
+                //         {
+                //             text: 'Ok',
+                //             onPress: () => {
+                //                 navigation.goBack();
+                //                 dispatch(
+                //                     updateProfileListItem({
+                //                         id: item.id,
+                //                         changes: { name: payload.name,gender:payload.gender,birth_time:payload.birthTime,dob:payload.dob,birth_place:payload.birthPlace },
+                //                     })
+                //                     );
+                //             },
+                //             style: 'default',
+                //         },
+                //         ],
+                //     });
                 }else if(result.success == false){
                     const result2 = decryptData(result.error,secretKey);
                     const result3 = JSON.parse(result2);

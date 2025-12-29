@@ -25,7 +25,7 @@ import FreeKundliIcon from '../../assets/icons/FreeKundliIcon';
 import KundliMatchIcon from '../../assets/icons/KundliMatchIcon';
 import FreeChatIcon from '../../assets/icons/FreeChatIcon';
 import { colors, Fonts } from '../../styles';
-import {  useIsFocused, useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import PrivateIcon from '../../assets/icons/PrivateIcon';
 import SearchIcon from '../../assets/icons/SearchIcon';
 import VerifiedIcon from '../../assets/icons/VerifiedIcon';
@@ -35,7 +35,7 @@ import CallWhiteIcon from '../../assets/icons/CallWhiteIcon';
 import Feather from 'react-native-vector-icons/Feather';
 import FastImage from 'react-native-fast-image';
 import { SlideMenu } from './SlideMenu';
-import { chatAcceptOrderApi, chatCancelOrderApi, createOrderApi, getPandit, getUserDetails } from '../../redux/actions/UserActions';
+import { chatAcceptOrderApi, chatCancelOrderApi, createOrderApi, getBalance, getPandit, getUserDetails, updateTokenApi } from '../../redux/actions/UserActions';
 import { AppSpinner } from '../../utils/AppSpinner';
 import WalletBottomSheet from '../Payment/WalletBottomSheet';
 import { ServiceConstants } from '../../services/ServiceConstants';
@@ -106,17 +106,35 @@ const [profileSelector, setProfileSelector] = useState(false);
 
 useEffect(() => {
   callPanditApi();
-  if(ServiceConstants.User_ID!=null){
-      getUserDetailsApi();
-  }
 }, []);
+
+useEffect(() => {
+  if(ServiceConstants.User_ID!=null){
+      callBalance();
+  }
+},[]);
+
+const callBalance =()=>{
+  getBalance().then(response => {
+    const result = JSON.parse(response);
+    dispatch(setUserDetails(result.data));
+  });
+}
 
   useEffect(() => {
     const initFCM = async () => {
       const token = await getFcmTokenAfterLogin();
       if (token) {
-        // 🔥 Send token to backend
-        // api.updateFcmToken(token);
+        updateTokenApi(token).then(response => {
+        const result = JSON.parse(response);
+        if(result.success===true){
+           console.log("Update Token Successfully ==>" +JSON.stringify(result));
+        }else{
+            const result2 = decryptData(result.error,secretKey);
+            const result3 = JSON.parse(result2);
+            console.log("Update Token Error response ==>" +JSON.stringify(result3));
+        }
+      });
       }
     };
 
@@ -134,69 +152,15 @@ useEffect(() => {
        dispatch(setWaitList(data));
     });
 
-    // onEvent('pandit_accepted', (data:any) => {
-    //   console.log("pandit_accepted"+JSON.stringify(data));
-
-    //         //   setPanditAcceptedData(data);
-    //         // setIncomingVisible(true);
-
-    //       setTimeout(()=>{
-               
-    //             setVisibleWaitList(false);
-
-    //             setYellowWaitList(true);
-    //             dispatch(setWaitList(data));
-    //      },1000);
-
-    //     //  setTimeout(()=>{
-    //     //     setPanditAcceptedData(data);
-    //     //     setIncomingVisible(true);
-    //     //  },1000);
-
-    //   let count = 0;
-    //   const playSound = async() => {
-    //     if (count >= 3) return;
-    //     count++;
-    //         try {
-    //   // const uri =
-    //   // Platform.OS === 'android'
-    //   //   ? 'android.resource://com.astrotalkguru/raw/notification_sound'
-    //   //   : 'https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3';
-    //        const uri = 'https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3';   
-    //   const msg = await NitroSound.startPlayer(uri);
-    //   NitroSound.addPlayBackListener((e) => {
-    //   });
-    //   // Use the proper playback end listener
-    //   NitroSound.addPlaybackEndListener((e) => {
-    //     console.log('Playback completed', e);
-    //       setTimeout(playSound, 500);
-    //   });
-    // } catch (error) {
-    //   console.error('Failed to start playback:', error);
-    // } finally {
-      
-    // }
-
-    //   };
-    //   playSound();
-    // });
-
     onEvent('user_continue_order', (data:any) => {
-      // Alert.alert("user_continue_order"+JSON.stringify(data));
-      // if (!data?.order_id) return;
-      // setVisibleWaitList(true);
       setYellowWaitList(true);
       setIncomingVisible(false);
-      // dispatch(removeWaitListItem(data?.id));
       dispatch(setWaitList(data));
 
     });
 
     onEvent('order_completed', (data:any) => {
-      // if (!data?.order_id) return;
-      // Alert.alert("order_completed"+JSON.stringify(data));
       dispatch(removeWaitListItemOrder(data?.order_id));
-
         setTimeout(()=>{
             setIncomingVisible(false);
             setVisibleWaitList(false);
@@ -274,27 +238,29 @@ const callPanditApi = () => {
             const result3 = JSON.parse(result2);
             console.log("Create Messages Error response ==>" +JSON.stringify(result3));
           
-            CustomDialogManager2.show({
-                title: 'Alert',
-                message: result3.message,
-                type:2,
-                buttons: [
-                  {
-                    text: 'Ok',
-                    onPress: () => {
-                        if(ServiceConstants.User_ID==null){
-                          navigation.reset({
-                                        index: 0,
-                                        routes: [{ name: 'AuthStack' }]
-                                      });
-                        }else{
-                          navigation.push("OrderHistoryScreen");
-                        }         
-                    },
-                    style: 'default',
-                  },
-                ],
-              });
+              CustomDialogManager2.show({
+                          title: 'Alert',
+                          message: result3.message,
+                          type:2,
+                          buttons: [
+                            {
+                              text: 'Ok',
+                              onPress: () => {
+                                  if(ServiceConstants.User_ID==null){
+                                    navigation.reset({
+                                                  index: 0,
+                                                  routes: [{ name: 'AuthStack' }]
+                                                });
+                                  }else{
+                                    navigation.push("OrderHistoryScreen");
+                                  }         
+                              },
+                              style: 'default',
+                            },
+                          ],
+                        });
+       
+       
         }
         
       });
@@ -307,7 +273,6 @@ const callPanditApi = () => {
       const result = JSON.parse(response);
       console.log("User Details Response:", result);
       dispatch(setUserDetails(result.data));
-      console.log("User Id is "+JSON.stringify(userDetailsData));
     });
   }
 
@@ -432,7 +397,6 @@ const handleCloseProfile = ()=>{
   setProfileSelector(false);
 }
 const handleStartChat = (item:any)=>{
-  // Alert.alert("Selected Profile=="+JSON.stringify(item));
   setProfileSelector(false);
   createOrderChatApi(selectedId,item.id);
 }
@@ -469,9 +433,10 @@ const handleStartChat = (item:any)=>{
           />
           
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            {userDetailsData.balance >0?(<Text style={styles.addCashText}>₹ {userDetailsData.balance}</Text>):(
+            <Text style={styles.addCashText}>₹ {userDetailsData.balance}</Text>
+            {/* {userDetailsData.balance >0?(<Text style={styles.addCashText}>₹ {userDetailsData.balance}</Text>):(
               <><Text style={styles.addCashText}>Add Cash</Text>
-            <WalletPlusIcon width={12} height={12} style={{ marginLeft: 6 }} /></>)}
+            <WalletPlusIcon width={12} height={12} style={{ marginLeft: 6 }} /></>)} */}
           </View>
         </TouchableOpacity>
 
@@ -1042,7 +1007,7 @@ ribbonContainer: {
 ribbon: {
   width: 110,                       // long enough to cross the corner
   paddingVertical: 2,
-  backgroundColor: colors.primaryColor,       // same golden color
+  backgroundColor: "#000",       // same golden color
   transform: [{ rotate: "-45deg" }],// angle like screenshot
   justifyContent: "center",
   alignItems: "center",
@@ -1059,7 +1024,7 @@ ribbonTextWrapper: {
   justifyContent: "center",
 },
 ribbonText: {
-  color: "#fff",
+  color: colors.primaryColor,
   fontSize: 7,
   fontFamily: Fonts.SemiBold,
   transform: [{ rotate: "45deg" }], // rotate text back

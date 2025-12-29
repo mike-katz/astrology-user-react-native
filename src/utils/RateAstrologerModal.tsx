@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Modal, Text, TouchableOpacity, TextInput, StyleSheet, Image, ScrollView,
-  useColorScheme
+  useColorScheme,
+  Alert
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import StarRating from 'react-native-star-rating-widget';
@@ -9,13 +10,38 @@ import { colors, Fonts } from '../styles';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import FastImage from 'react-native-fast-image';
+import { getChatInfoOrder } from '../redux/actions/UserActions';
+import { decryptData, secretKey } from '../services/requests';
 
-const RateAstrologerModal = ({ visible, onClose, onSubmit }:any) => {
+const RateAstrologerModal = ({ visible,data, onClose, onSubmit }:any) => {
   const [rating, setRating] = useState(0);
   const colorScheme = useColorScheme();
   const [review, setReview] = useState("");
   const [hideName, setHideName] = useState(false);
    const userDetailsData = useSelector((state: RootState) => state.userDetails.userDetails);
+
+   useEffect(()=>{
+    if(!data) return;
+   },[]);
+
+useEffect(()=>{
+  callInfoOrder();
+},[data]);
+   
+const callInfoOrder=()=>{
+      getChatInfoOrder(data.order_id).then(response => {
+          const result = JSON.parse(response);
+          if (result.success === true) {
+          const ratingNum = Number(result?.data?.rating);
+          setRating(Number.isFinite(ratingNum) ? ratingNum : 0);
+          
+            setReview(result.data.message);
+          } else if (result.success === false) {
+              const result2 = decryptData(result.error, secretKey);
+              const result3 = JSON.parse(result2);
+          }
+      });
+}
 
   return (
     <Modal visible={visible} animationType="fade" transparent>
@@ -73,7 +99,7 @@ const RateAstrologerModal = ({ visible, onClose, onSubmit }:any) => {
             />
             
           </View>
-          <Text style={styles.counter}>{review.length}/160</Text>
+          <Text style={styles.counter}>{(review?.length ?? 0)}/160</Text>
 
           {/* Submit */}
           <TouchableOpacity style={styles.submitBtn} onPress={()=>{
@@ -83,7 +109,8 @@ const RateAstrologerModal = ({ visible, onClose, onSubmit }:any) => {
                 hideName,
                 userId: userDetailsData?.id,
                 userName: userDetailsData?.name,
-                profile: userDetailsData?.profile
+                profile: userDetailsData?.profile,
+                data
                 });
                 onClose();
           }}>

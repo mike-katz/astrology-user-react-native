@@ -19,8 +19,9 @@ const userDetailsSlice = createSlice({
         ...action.payload, // merge with existing fields
       };
     },
+    resetUserData: () => initialState,
   },
 });
 
-export const { setUserDetails } = userDetailsSlice.actions;
+export const { setUserDetails ,resetUserData} = userDetailsSlice.actions;
 export default userDetailsSlice.reducer;

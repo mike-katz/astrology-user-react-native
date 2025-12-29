@@ -26,13 +26,15 @@ import { AppSpinner } from '../../utils/AppSpinner';
 import AstrotalkGuruji from '../../assets/icons/AstrotalkGuruji';
 import { ServiceConstants } from '../../services/ServiceConstants';
 import { useDispatch } from 'react-redux';
-import { setUserDetails } from '../../redux/slices/userDetailsSlice';
+import { resetUserData, setUserDetails } from '../../redux/slices/userDetailsSlice';
 type RootStackParamList = {
   Login: undefined;
   VerifyOtp: { phone: string };
 };
 import { useTranslation } from 'react-i18next';
 import i18n from "../../localization/i18n";
+import { resetWaitListData } from '../../redux/slices/waitListSlice';
+import { clearProfileList } from '../../redux/slices/profileListSlice';
 export default function LoginScreen() {
   const { t } = useTranslation();
   // i18n.changeLanguage('hi');
@@ -89,7 +91,9 @@ export default function LoginScreen() {
     ServiceConstants.User_ID = null;
     ServiceConstants.setUserName(null);
     ServiceConstants.setUserphone(null);
-    dispatch(setUserDetails({}));
+    dispatch(resetUserData());
+    dispatch(resetWaitListData());
+    dispatch(clearProfileList());
     navigation.reset({
       index: 0,
       routes: [{ name: 'MainTabs' }]

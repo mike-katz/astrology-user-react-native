@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Platform,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
@@ -47,7 +49,24 @@ const callCreatePayment = ()=>{
           const result = JSON.parse(response);
           if (result.success === true) {
             console.log("Payment Successfully ==>" + JSON.stringify(result));
-            CustomDialogManager2.show({
+            if(Platform.OS==='ios'){
+                      Alert.alert(
+                                            "Success",
+                                            result.message,
+                                            [
+                                            
+                                            {
+                                                text: "Ok",
+                                                onPress: () => {
+                  dispatch(setUserDetails({balance:(numericAmount+numericBalance)}));
+                    navigation.goBack();
+                                       
+                                                },
+                                            },
+                                            ]
+                                        );
+            }else{
+         CustomDialogManager2.show({
               title: 'Success',
               message: result.message,
               type: 1,
@@ -62,10 +81,28 @@ const callCreatePayment = ()=>{
                 },
               ],
             });
+            }
+   
           } else {
             const result2 = decryptData(result.error, secretKey);
             const result3 = JSON.parse(result2);
             console.log("Payment Error response ==>" + JSON.stringify(result3));
+            if(Platform.OS==='ios'){
+                                  Alert.alert(
+                                            "Alert",
+                                            result3.message,
+                                            [
+                                            
+                                            {
+                                                text: "Ok",
+                                                onPress: () => {
+                
+                                       
+                                                },
+                                            },
+                                            ]
+                                        );
+            }else{
             CustomDialogManager2.show({
               title: 'Alert',
               message: result3.message,
@@ -80,6 +117,8 @@ const callCreatePayment = ()=>{
                 },
               ],
             });
+            }
+
           }
     
         });

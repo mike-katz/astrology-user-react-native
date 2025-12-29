@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,10 +11,13 @@ import {
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import { BackIcon } from '../../assets/icons';
 import { Fonts } from '../../styles';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation } from '@react-navigation/native';
 import WalletIcon from '../../assets/icons/WalletIcon';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
+import { ServiceConstants } from '../../services/ServiceConstants';
+import { getBalance } from '../../redux/actions/UserActions';
+import { setUserDetails } from '../../redux/slices/userDetailsSlice';
 
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = (width - 60) / 3; // 3-column grid
@@ -38,10 +41,25 @@ const amounts = [
 
 const AddMoneyScreen = () => {
     const navigation = useNavigation<any>();
+    const dispatch = useDispatch();
     const handleBack = () => {
         navigation.goBack();
     }
     const userDetailsData = useSelector((state: RootState) => state.userDetails.userDetails);
+
+    useEffect(() => {
+      if(ServiceConstants.User_ID!=null){
+          callBalance();
+      }
+    },[]);
+
+    const callBalance =()=>{
+          getBalance().then(response => {
+          const result = JSON.parse(response);
+          dispatch(setUserDetails(result.data));
+        });
+    }
+
   return (
        <SafeAreaProvider>
            <SafeAreaView style={styles.container}>
@@ -212,3 +230,4 @@ header: {
     fontFamily:Fonts.Medium
   },
 });
+

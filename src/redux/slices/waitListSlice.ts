@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+const initialState = {
+  waitlist: [] as any[],
+};
 const waitListSlice = createSlice({
   name: 'userDetails',
-  initialState:{
-    waitlist: [] as any[],
-  },
+initialState,
   reducers: {
       setWaitList(state, action) {
       const incoming = Array.isArray(action.payload)
@@ -44,8 +45,9 @@ const waitListSlice = createSlice({
           item => item.order_id !== orderId
         );
       },
+      resetWaitListData: () => initialState,
   },
 });
 
-export const { setWaitList ,updateWaitListItem,removeWaitListItem,removeWaitListItemOrder} = waitListSlice.actions;
+export const { setWaitList ,updateWaitListItem,removeWaitListItem,removeWaitListItemOrder,resetWaitListData} = waitListSlice.actions;
 export default waitListSlice.reducer;

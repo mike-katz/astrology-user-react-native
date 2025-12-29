@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet, Alert, useColorScheme } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet, Alert, useColorScheme, Platform } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import DatePicker from "react-native-date-picker";
 
@@ -115,6 +115,25 @@ const CreateProfileScreen = () => {
                 const result = JSON.parse(response);
                 if (result.success == true){
                     console.log("Profile Created ==="+JSON.stringify(result));
+
+                    if(Platform.OS==='ios'){
+                             Alert.alert(
+                                              "Profile Created Successfully",
+                                              result.message,
+                                              [
+                                              
+                                              {
+                                                  text: "Ok",
+                                                  onPress: () => {
+                            
+                                        navigation.goBack();
+                                    dispatch(setProfileList(result.data));
+                                        
+                                                  },
+                                              },
+                                              ]
+                                          );
+                    }else{
                     CustomDialogManager2.show({
                             title: 'Profile Created Successfully',
                             message: result.message,
@@ -130,9 +149,29 @@ const CreateProfileScreen = () => {
                             },
                             ],
                         });
+                    }    
+
+
                 }else if(result.success == false){
             const result2 = decryptData(result.error,secretKey);
             const result3 = JSON.parse(result2);
+            if(Platform.OS==='ios'){
+                 Alert.alert(
+                                  "Alert",
+                                  result3.message,
+                                  [
+                                  
+                                  {
+                                      text: "Ok",
+                                      onPress: () => {
+                
+                            
+                            
+                                      },
+                                  },
+                                  ]
+                              );
+            }else{
                 CustomDialogManager2.show({
                     title: 'Alert',
                     message: result3.message,
@@ -147,6 +186,8 @@ const CreateProfileScreen = () => {
                     },
                     ],
                 });
+            }
+
             }
             });
 

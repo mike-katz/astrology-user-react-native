@@ -8,6 +8,7 @@ import {
   FlatList,
   Modal,
   Platform,
+  Alert,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { deleteProfileAction, getProfileList } from '../../redux/actions/UserActions';
@@ -97,6 +98,23 @@ useFocusEffect(
         if (profilelist.length > 0){
             setSelectedId(profilelist[0].id);
         } 
+                  if(Platform.OS==='ios'){
+ Alert.alert(
+                  "Profile Deleted",
+                  result.message,
+                  [
+                  
+                  {
+                      text: "Ok",
+                      onPress: () => {
+
+            
+            
+                      },
+                  },
+                  ]
+              );
+          }else{
         CustomDialogManager2.show({
               title: 'Profile Deleted',
               message: result.message,
@@ -111,9 +129,27 @@ useFocusEffect(
               },
               ],
           });
+        }
       }else if(result.success == false){
           const result2 = decryptData(result.error,secretKey);
           const result3 = JSON.parse(result2);
+          if(Platform.OS==='ios'){
+ Alert.alert(
+                  "Alert",
+                  result3.message,
+                  [
+                  
+                  {
+                      text: "Ok",
+                      onPress: () => {
+
+            
+            
+                      },
+                  },
+                  ]
+              );
+          }else{
           CustomDialogManager2.show({
               title: 'Alert',
               message: result3.message,
@@ -128,6 +164,9 @@ useFocusEffect(
               },
               ],
           });
+          }
+               
+
         }
     });
   }
@@ -211,6 +250,9 @@ useFocusEffect(
           {profilelist.length < MAX_PROFILES && (
             <TouchableOpacity style={styles.addCard} onPress={()=>{
               navigation.push("CreateProfileScreen");
+              if(Platform.OS==='ios'){
+                  onClose();
+              }
             }}>
               <Text style={styles.plus}>+</Text>
             </TouchableOpacity>

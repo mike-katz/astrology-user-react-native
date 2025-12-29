@@ -313,11 +313,11 @@ useFocusEffect(
     const formatted = moment(item.created_at).format("DD-MMM-YYYY");
     return (
       <TouchableOpacity style={styles.row} onPress={() => {
-        {item.status === "completed" &&(
-            navigation.push('ChatWindow', {
-              astrologerId: item.pandit_id,
-              orderId: item.order_id,
-            })
+        {item.status === "completed" &&( {}
+            // navigation.push('ChatWindow', {
+            //   astrologerId: item.pandit_id,
+            //   orderId: item.order_id,
+            // })
         )}
 
       }}>
@@ -620,7 +620,9 @@ useFocusEffect(
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1, 
+    backgroundColor: "#fff" 
+  },
 
   header: {
     flexDirection: "row",

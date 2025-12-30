@@ -101,7 +101,7 @@ const CallScreen = () =>{
 
   const filters = useMemo(() => [
     { id: 'filter', title: 'Filter', icon:<FilterIcon/> ,color:'#6B6B6B'},
-    { id: 'all', title: 'All', icon:<AllIcon/>,color:'#FBB917' },
+    { id: 'all', title: 'All', icon:<AllIcon/>,color:colors.primaryColor },
     // { id: 'tarot', title: 'Tarot',icon:<FilterIcon/> },
     // { id: 'palm', title: 'Palmistry',icon:<FilterIcon/> },
     // { id: 'numerology', title: 'Numerology',icon:<FilterIcon/> },
@@ -492,7 +492,10 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       alignItems: 'center',
       paddingHorizontal: 16,
-      paddingVertical: 5,
+      paddingVertical: 7,
+      backgroundColor:'#FFF',
+      borderBottomWidth:.4,
+      borderBottomColor:'gray',
     },
   
 profileWrapper: {

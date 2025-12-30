@@ -107,7 +107,7 @@ export default function LoginScreen() {
               style={styles.container}
               behavior={Platform.OS === 'ios' ? 'padding' : undefined}> */}
       {/* Skip */}
-      <Pressable android_ripple={{ color: '#FBB91730', borderless: true }}
+      <Pressable android_ripple={{ color: colors.primaryLightColor, borderless: true }}
               style={({ pressed }) => [
                 styles.skipBtn,
                 pressed && { opacity: 0.85 }, // optional visual feedback
@@ -207,7 +207,7 @@ export default function LoginScreen() {
       </View>
 
       {/* Truecaller */}
-      <Pressable android_ripple={{ color: '#FBB91730', borderless: true }}
+      <Pressable android_ripple={{ color: colors.primaryLightColor, borderless: true }}
               style={({ pressed }) => [
                 styles.truecallerBtn,
                 pressed && { opacity: 0.85 }, // optional visual feedback
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.SemiBold,
   },
   logoContainer: {
-    marginTop: 40,
+    marginTop: '21%',
     marginBottom: 15,
   },
   logo: {

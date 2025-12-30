@@ -11,6 +11,7 @@ import {
 import Feather from "react-native-vector-icons/Feather";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { colors } from "../../../styles";
 
 const LEFT_OPTIONS: Array<keyof typeof RIGHT_OPTIONS> = [
   "Sort by",
@@ -108,7 +109,7 @@ const SortFilterModal = ({ visible, onClose,onApply }: any) => {
                     style={{
                         width: 6,
                         height: 55,
-                        backgroundColor: active ? "#FBB917" : "transparent",
+                        backgroundColor: active ? colors.primaryColor : "transparent",
                         marginRight: 12,
                         // borderRadius: 2,
                         borderTopRightRadius:22,
@@ -308,7 +309,7 @@ const styles = StyleSheet.create({
   },
 
   applyBtn: {
-    backgroundColor: "#FBB917",
+    backgroundColor: colors.primaryColor,
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: "center",

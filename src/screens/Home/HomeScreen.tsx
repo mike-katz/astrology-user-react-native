@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {
@@ -12,7 +12,8 @@ import {
   Dimensions,
   Pressable,
   Alert,
-  useColorScheme
+  useColorScheme,
+  Animated
 } from 'react-native';
 import  NitroSound  from 'react-native-nitro-sound';
 import MenuIcon from '../../assets/icons/MenuIcon';
@@ -103,6 +104,25 @@ const [walletBalance, setWalletBalance] = useState<number>(0);
  const [panditAcceptedData, setPanditAcceptedData] = useState<any>([]);
 
 const [profileSelector, setProfileSelector] = useState(false);
+
+const bottomAnim = useRef(new Animated.Value(1)).current;
+const [isScrolling, setIsScrolling] = useState(false);
+
+const hideBottom = () => {
+  Animated.timing(bottomAnim, {
+    toValue: 0,
+    duration: 200,
+    useNativeDriver: true,
+  }).start();
+};
+
+const showBottom = () => {
+  Animated.timing(bottomAnim, {
+    toValue: 1,
+    duration: 200,
+    useNativeDriver: true,
+  }).start();
+};
 
 useEffect(() => {
   callPanditApi();
@@ -448,7 +468,21 @@ const handleStartChat = (item:any)=>{
       </View>
 
 
-  <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+  <ScrollView style={styles.container} showsVerticalScrollIndicator={false}
+  onScrollBeginDrag={() => {
+    setIsScrolling(true);
+    hideBottom();
+  }}
+  onScrollEndDrag={() => {
+    setIsScrolling(false);
+    showBottom();
+  }}
+  onMomentumScrollBegin={() => {
+    hideBottom();
+  }}
+  onMomentumScrollEnd={() => {
+    showBottom();
+  }}>
 
     <Pressable style={styles.wrapper} onPress={() => {
       navigation.push('SearchScreen');
@@ -541,7 +575,7 @@ const handleStartChat = (item:any)=>{
 
           <FastImage source={{uri:item.profile}} style={styles.astroImg1} />
           <Text style={styles.astroName}>{item.name}</Text>
-          <Text style={styles.astroPrice}>₹{item.charge}/min</Text>
+          <Text style={styles.astroPrice}>₹{item.chat_rate}/min</Text>
           {/* <View style={styles.priceRow}>
             <Text style={styles.oldPrice}>₹ {item.charge}</Text>
             <Text style={styles.newPrice}>₹ {item.charge}/min</Text>
@@ -681,21 +715,36 @@ const handleStartChat = (item:any)=>{
 
   </ScrollView>
 
-          <View style={styles.bottomContainer}>
+          <Animated.View
+            style={[
+              styles.bottomContainer,
+              {
+                transform: [
+                  {
+                    translateY: bottomAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [120, 0], // move down when hidden
+                    }),
+                  },
+                ],
+                opacity: bottomAnim,
+              },
+            ]}>
       
             {/* Chat Button */}
-            <Pressable android_ripple={{ color: '#FBB91730', borderless: true }}
+            <Pressable android_ripple={{ color: colors.primaryLightColor, borderless: true }}
               style={({ pressed }) => [
                 styles.chatBtn,
                 pressed && { opacity: 0.85 }, // optional visual feedback
               ]}  onPress={() => navigation.navigate('Chat')}>
+
               <ChatWhiteIcon/>
               <Text style={styles.btnText} numberOfLines={1}
               ellipsizeMode="tail">Chat with Astrologer</Text>
             </Pressable>
 
             {/* Call Button */}
-            <Pressable android_ripple={{ color: '#FBB91730', borderless: true }}
+            <Pressable android_ripple={{ color: colors.primaryLightColor, borderless: true }}
               style={({ pressed }) => [
                 styles.callBtn,
                 pressed && { opacity: 0.85 }, // optional visual feedback
@@ -705,7 +754,7 @@ const handleStartChat = (item:any)=>{
               ellipsizeMode="tail">Call with Astrologer</Text>
             </Pressable>
 
-          </View>
+          </Animated.View>
 
          <WalletBottomSheet
             visible={showWallet}
@@ -815,16 +864,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 5,
+    paddingVertical: 7,
+    backgroundColor:'#FFF',
+    borderBottomWidth:.4,
+    borderBottomColor:'gray',
   },
 
 profileWrapper: {
     width: 35,
     height: 35,
     borderRadius: 35 / 2,
-    backgroundColor: '#FFFAE6',        // light yellow fill
+    backgroundColor: colors.primaryLightColor, 
     borderWidth: 2,
-    borderColor: colors.primaryColor,           // yellow border
+    borderColor: colors.primaryBorderColor,        
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -953,7 +1005,7 @@ profileWrapper: {
   bannerImg: {
     width: '100%',
     height: 110,
-    backgroundColor: '#FBB917',
+    backgroundColor: colors.primaryColor,
     marginLeft: 10,
     marginEnd: 10,
     resizeMode: 'cover',
@@ -1024,7 +1076,7 @@ ribbonTextWrapper: {
   justifyContent: "center",
 },
 ribbonText: {
-  color: colors.primaryColor,
+  color: "#FFF",
   fontSize: 7,
   fontFamily: Fonts.SemiBold,
   transform: [{ rotate: "45deg" }], // rotate text back
@@ -1053,13 +1105,13 @@ newPrice: { color: "#CA0D33", fontSize: 13, fontWeight: "600" },
 
 
 chatBtnText: { 
-  color: '#0CA789', 
+  color: colors.primaryColor, 
   fontWeight: '600',
   fontFamily: Fonts.SemiBold, 
 },
 astroChatBtn: {
   borderWidth: 1,
-  borderColor: '#0CA789',
+  borderColor: colors.primaryColor,
   paddingVertical: 6,
   paddingHorizontal: 22,
   borderRadius: 20,
@@ -1186,7 +1238,7 @@ divider2: {
   },
   bottomContainer: {
     position: 'absolute',
-    bottom: Platform.OS==='android'?99:105,   // <-- PLACE ABOVE YOUR TAB BAR
+    bottom: Platform.OS==='android'?'16%':135,   // <-- PLACE ABOVE YOUR TAB BAR
     width: width,
     paddingHorizontal: 12,
     flexDirection: 'row',

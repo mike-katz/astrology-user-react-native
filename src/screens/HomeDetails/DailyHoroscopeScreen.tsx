@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   ScrollView,
   View,
@@ -92,9 +92,27 @@ const link_web ='https://astrotalk.com/horoscope/todays-horoscope';
 const [showDialog, setShowDialog] = useState(false);
 const luckyColors = Array.from({ length: 2 + Math.floor(Math.random() * 1) })
   .map(() => getRandomColor());
+  const bottomAnim = useRef(new Animated.Value(1)).current;
+  const [isScrolling, setIsScrolling] = useState(false);
 const handleBack = () => {
         navigation.goBack();
     }
+
+    const hideBottom = () => {
+      Animated.timing(bottomAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    };
+    
+    const showBottom = () => {
+      Animated.timing(bottomAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    };
     
     const handleShare = async () => {
           try {
@@ -151,10 +169,24 @@ const renderZodiac = ({ item }: { item: Zodiac }) => {
                             width={30} height={30}
                         />
                     </TouchableOpacity>
-                    <View style={{ position:'absolute',width:'100%', height: .4,backgroundColor:'#7B7B7B',bottom:0 }}></View>
+                   
                 </Animated.View>
 
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}
+       onScrollBeginDrag={() => {
+    setIsScrolling(true);
+    hideBottom();
+  }}
+  onScrollEndDrag={() => {
+    setIsScrolling(false);
+    showBottom();
+  }}
+  onMomentumScrollBegin={() => {
+    hideBottom();
+  }}
+  onMomentumScrollEnd={() => {
+    showBottom();
+  }}>
         {/* ZODIAC HORIZONTAL */}
         <View style={styles.zodiacWrap}>
           <FlatList
@@ -327,10 +359,24 @@ const renderZodiac = ({ item }: { item: Zodiac }) => {
       </ScrollView>
 
 
-          <View style={styles.bottomContainer}>
+                  <Animated.View
+                      style={[
+                        styles.bottomContainer,
+                        {
+                          transform: [
+                            {
+                              translateY: bottomAnim.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [120, 0], // move down when hidden
+                              }),
+                            },
+                          ],
+                          opacity: bottomAnim,
+                        },
+                      ]}>
       
             {/* Chat Button */}
-            <Pressable android_ripple={{ color: '#FBB91730', borderless: true }}
+            <Pressable android_ripple={{ color: colors.primaryColor, borderless: true }}
               style={({ pressed }) => [
                 styles.chatBtn,
                 pressed && { opacity: 0.85 }, // optional visual feedback
@@ -341,7 +387,7 @@ const renderZodiac = ({ item }: { item: Zodiac }) => {
             </Pressable>
 
             {/* Call Button */}
-            <Pressable android_ripple={{ color: '#FBB91730', borderless: true }}
+            <Pressable android_ripple={{ color: colors.primaryColor, borderless: true }}
               style={({ pressed }) => [
                 styles.callBtn,
                 pressed && { opacity: 0.85 }, // optional visual feedback
@@ -351,7 +397,7 @@ const renderZodiac = ({ item }: { item: Zodiac }) => {
               ellipsizeMode="tail">Call with Astrologer</Text>
             </Pressable>
 
-          </View>
+          </Animated.View>
 
           <FeedbackDialog
                 visible={showDialog}
@@ -371,6 +417,8 @@ const styles = StyleSheet.create({
           alignItems: "center",
           justifyContent: "space-between",
           backgroundColor: "#fff",
+          borderBottomColor:'gray',
+          borderBottomWidth:.4
       },
       headerTitle: {
           position: 'absolute',
@@ -442,7 +490,7 @@ const styles = StyleSheet.create({
 
 topTabContainer: {
   flexDirection: "row",
-  backgroundColor: "#FFF7DF",
+  backgroundColor: colors.primaryLightColor,
   borderRadius: 30,
   padding: 4,
   marginBottom: 14,
@@ -559,7 +607,7 @@ topTabTextActive: {
 
 midTabContainer: {
   flexDirection: "row",
-  backgroundColor: "#FFF7DF",
+  backgroundColor: colors.primaryLightColor,
   borderRadius: 30,
   padding: 4,
   marginBottom: 14,
@@ -605,14 +653,14 @@ midTabTextActive: {
     alignItems: "center",
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#FFD27A",
+    borderColor: colors.primaryLightColor,
     justifyContent:'center'
   },
   feedbackBtnText: { fontSize:17,fontWeight: "500", color: "#311E00",fontFamily:Fonts.Medium },
 
   bottomContainer: {
       position: 'absolute',
-      bottom: Platform.OS==='android'?85:95,   // <-- PLACE ABOVE YOUR TAB BAR
+      bottom: '15%',   // <-- PLACE ABOVE YOUR TAB BAR
       width: width,
       paddingHorizontal: 16,
       flexDirection: 'row',

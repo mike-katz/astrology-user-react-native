@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import FastImage from "react-native-fast-image";
 import { defaultProfile } from "../constant/AppConst";
+import { colors } from "../styles";
 
 type Props = {
   visible: boolean;
@@ -107,6 +108,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 24,
+    justifyContent:'center'
   },
 
   avatarBlock: {
@@ -118,7 +120,7 @@ const styles = StyleSheet.create({
     height: 82,
     borderRadius: 41,
     borderWidth: 3,
-    borderColor: "#FFD200", // yellow ring
+    borderColor: colors.primaryColor,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#fff",
@@ -134,10 +136,12 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: "#4CAF50",
+    backgroundColor: colors.primaryColor,
     justifyContent: "center",
     alignItems: "center",
-    marginHorizontal: 14,
+    marginHorizontal: 5,
+    marginBottom:20,
+    
   },
 
   name: {

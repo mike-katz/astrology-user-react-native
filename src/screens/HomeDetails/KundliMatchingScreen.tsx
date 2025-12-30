@@ -54,7 +54,7 @@ const colorScheme = useColorScheme();
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
-                <View style={{ flex: 1, backgroundColor: "#F8F8E8" }}>
+                <View style={{ flex: 1 }}>
                     {/* Header */}
                     <View style={styles.header}>
                         <View style={styles.left}>
@@ -430,16 +430,16 @@ inputBox: {
         fontFamily:Fonts.Medium
     },
     fab: {
-position: 'absolute',
-left: 20,
-right: 20,
-bottom: 18,
-height: 56,
-borderRadius: 28,
-backgroundColor: colors.primaryColor,
-alignItems: 'center',
-justifyContent: 'center',
-elevation: 3,
+        position: 'absolute',
+        left: 20,
+        right: 20,
+        bottom: '7%',
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: colors.primaryColor,
+        alignItems: 'center',
+        justifyContent: 'center',
+        elevation: 3,
 },
 fabText: { fontWeight: '800', color: '#000', fontSize: 16,fontFamily:Fonts.Medium },
 });

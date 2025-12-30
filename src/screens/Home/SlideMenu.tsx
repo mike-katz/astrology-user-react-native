@@ -12,7 +12,6 @@ import {
   Pressable,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import { colors, Fonts } from "../../styles";
 import DeviceInfo from 'react-native-device-info';
 import { useNavigation } from "@react-navigation/native";
@@ -320,7 +319,7 @@ const styles = StyleSheet.create({
   menuRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: Platform.OS==='ios'?10:12,
+    paddingVertical: Platform.OS==='ios'?10:11,
     paddingHorizontal: 20,
   },
   menuText: {
@@ -359,7 +358,7 @@ const styles = StyleSheet.create({
   },
 
   version: {
-    color: "green",
+    color: colors.primaryColor,
     fontSize: 13,
     textAlign: "center",
     marginVertical: 20,

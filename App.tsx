@@ -121,7 +121,8 @@ const MainTabsNavigator = () => (
       contentStyle: { paddingTop: 0 },
     })}>
 
-    <Tab.Screen name="Home" component={HomeScreen} />
+    <Tab.Screen name="Home" component={HomeScreen} 
+    />
     <Tab.Screen name="Chat" component={ChatScreen} />
     {/* <Tab.Screen name="Live" component={LiveScreen} /> */}
     <Tab.Screen name="Call" component={CallScreen} />
@@ -137,7 +138,7 @@ const RootNavigator = ({ initialRoute }: { initialRoute: keyof RootStackParamLis
       <RootStack.Screen
         name="AuthStack"
         component={AuthStackNavigator}
-        options={{ headerShown: false }}
+        options={{ headerShown: false ,animation: 'slide_from_left',}}
       />
       <RootStack.Screen
         name="MainTabs"
@@ -147,118 +148,118 @@ const RootNavigator = ({ initialRoute }: { initialRoute: keyof RootStackParamLis
       <RootStack.Screen
         name="Login"
         component={LoginScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false ,animation: 'slide_from_right',}} />
 
       <RootStack.Screen
         name="GurujiCongrats"
         component={GurujiCongrats}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false ,animation: 'slide_from_right',}} />
 
       <RootStack.Screen
         name="WebviewScreen"
         component={WebviewScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false ,animation: 'slide_from_right',}} />
 
       <RootStack.Screen
         name="SearchScreen"
         component={SearchScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false ,animation: 'slide_from_right',}} />
 
       <RootStack.Screen
         name="HelpSupportScreen"
         component={HelpSupportScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false ,animation: 'slide_from_right',}} />
       <RootStack.Screen
         name="AddMoneyScreen"
         component={AddMoneyScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false,animation: 'slide_from_right', }} />
       <RootStack.Screen
         name="AstrologyBlogScreen"
         component={AstrologyBlogScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false ,animation: 'slide_from_right',}} />
 
       <RootStack.Screen
         name="FreeChatSteps"
         component={FreeChatSteps}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false,animation: 'slide_from_right', }} />
 
       <RootStack.Screen
         name="SearchPlaceScreen"
         component={BirthPlaceScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false ,animation: 'slide_from_right',}} />
 
       <RootStack.Screen
         name="KundliListScreen"
         component={KundliScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false ,animation: 'slide_from_right',}} />
 
       <RootStack.Screen
         name="CreateKundliSteps"
         component={CreateKundliSteps}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false,animation: 'slide_from_right', }} />
 
       <RootStack.Screen
         name="EditKundliScreen"
         component={EditKundliScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false,animation: 'slide_from_right', }} />
 
      <RootStack.Screen
         name="DailyHoroscopeScreen"
         component={DailyHoroscopeScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false ,animation: 'slide_from_right',}} />
         
      <RootStack.Screen
         name="PanditProfileDetailsScreen"
         component={PanditProfileDetailsScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false ,animation: 'slide_from_right',}} />
 
      <RootStack.Screen
         name="EditProfileScreen"
         component={EditProfileScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false,animation: 'slide_from_right', }} />
 
     <RootStack.Screen
         name="PanditReviewListScreen"
         component={PanditReviewListScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false,animation: 'slide_from_right', }} />
 
     <RootStack.Screen
         name="FollowingScreen"
         component={FollowingScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false ,animation: 'slide_from_right',}} />
 
     <RootStack.Screen
         name="ChatWindow"
         component={ChatWindow}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false ,animation: 'slide_from_right',}} />
 
     <RootStack.Screen
         name="SettingsScreen"
         component={SettingsScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false,animation: 'slide_from_right', }} />
 
     <RootStack.Screen
         name="OrderHistoryScreen"
         component={OrderHistoryScreen}
-        options={{ headerShown: false }} />    
+        options={{ headerShown: false ,animation: 'slide_from_right',}} />    
 
     <RootStack.Screen
         name="KundliMatchingScreen"
         component={KundliMatchingScreen}
-        options={{ headerShown: false }} />  
+        options={{ headerShown: false,animation: 'slide_from_right', }} />  
 
        <RootStack.Screen
         name="CreateProfileScreen"
         component={CreateProfileScreen}
-        options={{ headerShown: false }} /> 
+        options={{ headerShown: false ,animation: 'slide_from_right',}} /> 
 
        <RootStack.Screen
         name="PaymentDetailsScreen"
         component={PaymentDetailsScreen}
-        options={{ headerShown: false }} /> 
+        options={{ headerShown: false,animation: 'slide_from_right', }} /> 
               
 
-           <RootStack.Screen
+       <RootStack.Screen
         name="SoundScreen"
         component={SoundScreen}
         options={{ headerShown: false }} />

@@ -213,7 +213,7 @@ const renderProfilePic = () => {
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
-                <View style={{ flex: 1, backgroundColor: "#F8F8E8" }}>
+                <View style={{ flex: 1, }}>
                     {/* Header */}
                     <View style={styles.header}>
                        

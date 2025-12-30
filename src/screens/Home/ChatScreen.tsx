@@ -101,7 +101,7 @@ const ChatScreen = () => {
 
   const filters = useMemo(() => [
     { id: 'filter', title: 'Filter', icon: <FilterIcon />, color: '#BABABA' },
-    { id: 'all', title: 'All', icon: <AllIcon />, color: '#FFD700' },
+    { id: 'all', title: 'All', icon: <AllIcon />, color: colors.primaryColor },
     // { id: 'tarot', title: 'Tarot',icon:<FilterIcon/> },
     // { id: 'palm', title: 'Palmistry',icon:<FilterIcon/> },
     // { id: 'numerology', title: 'Numerology',icon:<FilterIcon/> },
@@ -236,7 +236,7 @@ const handleStartChat = (item:any)=>{
           <Text style={styles.subtitle}>{formatKnowledge(item.knowledge)}</Text>
           <Text style={styles.lang}>{formatKnowledge(item.language)}</Text>
           <Text style={styles.exp}>Exp- {item.experience} years</Text>
-          <Text style={styles.price}>₹ {item.charge}/min</Text>
+          <Text style={styles.price}>₹ {item.chat_rate}/min</Text>
           {/* <View style={styles.priceRow}>
             <Text style={styles.oldPrice}>₹ {item.charge}</Text>
             <Text style={styles.newPrice}>₹ {item.charge}/min</Text>
@@ -502,16 +502,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 5,
+        paddingVertical: 7,
+    backgroundColor:'#FFF',
+    borderBottomWidth:.4,
+    borderBottomColor:'gray',
   },
 
   profileWrapper: {
     width: 35,
     height: 35,
     borderRadius: 35 / 2,
-    backgroundColor: '#FFFAE6',        // light yellow fill
+    backgroundColor: colors.primaryLightColor,     
     borderWidth: 2,
-    borderColor: colors.primaryColor,           // yellow border
+    borderColor: colors.primaryBorderColor,         
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -683,9 +686,9 @@ const styles = StyleSheet.create({
   newPrice: { color: "#CA0D33", fontSize: 15, fontWeight: "600" },
 
   chatButton: {
-    borderWidth: 1, borderColor: '#0CA789', paddingVertical: 6, paddingHorizontal: 18, borderRadius: 9,
+    borderWidth: 1, borderColor: colors.primaryBorderColor, paddingVertical: 6, paddingHorizontal: 18, borderRadius: 9,
   },
-  chatBtnText: { color: '#0CA789', fontWeight: '600' },
+  chatBtnText: { color: colors.primaryColor, fontWeight: '600' },
   loadingMore: { padding: 16, alignItems: 'center', justifyContent: 'center' },
 });
 

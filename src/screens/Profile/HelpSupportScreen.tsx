@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   walletBox: {
     margin:-15,
     marginTop: 15,
-    backgroundColor: "#FFF9D6",
+    backgroundColor: colors.primaryLightColor,
     padding: 12,
     borderRadius: 10,
   },

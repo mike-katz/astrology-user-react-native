@@ -1,4 +1,4 @@
-import { Platform, View } from "react-native";
+import { Animated, Platform, View } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
 import { colors } from "../styles";
 import { CustomDialogManager2 } from "../utils/CustomDialog2";

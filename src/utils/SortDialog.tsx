@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Pressable
 } from 'react-native';
+import { colors } from '../styles';
 
 export default function SortDialog({ visible, onClose, onApply }:any) {
   const [selected, setSelected] = useState<string>("helpful");
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 50,
     borderWidth: 2,
-    borderColor: "#FFC700",
+    borderColor: colors.primaryColor,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 14
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     width: 11,
     height: 11,
     borderRadius: 50,
-    backgroundColor: "#FFC700"
+    backgroundColor: colors.primaryColor
   },
   optionText: {
     fontSize: 16,
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
     width: "45%",
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: "#FFC700",
+    backgroundColor: colors.primaryColor,
     alignItems: "center"
   },
   cancelTxt: {

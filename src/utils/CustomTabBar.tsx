@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     flexDirection: 'row',
     backgroundColor: '#fff',
-    height: Platform.OS === 'ios' ? '10%' : '9%', //100 and 80 are the heights for iOS and Android respectively
+    height: Platform.OS === 'ios' ? '12%' : '12%', //100 and 80 are the heights for iOS and Android respectively
     borderTopLeftRadius: 20,//30
     borderTopRightRadius: 20, //30
     shadowColor: '#000',
@@ -107,6 +107,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     zIndex: 100, // ensure it's above the screen
+    paddingBottom:Platform.OS === 'android' ?26:8
   },
   tabButton: {
     flex: 1,

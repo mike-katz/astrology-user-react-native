@@ -77,7 +77,7 @@ const WebviewScreen = ({route}:any) => {
         <View style={{ flex: 1 }}>
             {loading && (
               <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color="#FBB917" />
+                <ActivityIndicator size="large" color={colors.primaryColor} />
                 <Text style={{ marginTop: 8, fontSize: 14 }}>Loading...</Text>
               </View>
             )}

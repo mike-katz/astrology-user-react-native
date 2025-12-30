@@ -41,11 +41,13 @@ export const colors = {
   primaryDark: '#25484A',
   lightGreen: '#7AAD37',
   darkGreen: '#276D47',
-  ButtunGradientColor: ["#800080", "#00000033"],
+  ButtunGradientColor: ["#febd19", "#FFFFF33"],
   Buttondisabled: "#B0B0B0",
   TextHeader: "#000000",
-  primaryColor:"#febd19",//'#FBB917',
-  primaryLightColor:'#febd1920'
+  primaryColor:"#febd19",
+  // primaryColor:"#800080",
+  primaryBorderColor:"#febd19",
+  primaryLightColor:'#FFF4D7'
 };
 
 export const Fonts = {

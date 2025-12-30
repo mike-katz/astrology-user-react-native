@@ -357,7 +357,7 @@ useFocusEffect(
                   });
                   // dispatch(removeWaitListItem(item.id));   
             }}>
-              <Text style={[styles.subText, { color: 'green' }]}>
+              <Text style={[styles.subText, { color: colors.primaryColor }]}>
                 {"Chat"}
               </Text>
             </TouchableOpacity>
@@ -753,7 +753,7 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     borderWidth: 2,
-    borderColor: "#F1C42B", // accent border that matches your app
+    borderColor: colors.primaryBorderColor, // accent border that matches your app
     backgroundColor: "#fff",
   },
   onlineDot: {

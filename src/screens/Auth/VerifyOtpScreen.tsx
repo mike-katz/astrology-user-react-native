@@ -204,7 +204,7 @@ const VerifyOtpScreen = ({ route, navigation }: VerifyOtpScreenProps) => {
       </View>
       <View style={styles.bodyContent}>
         <Text style={styles.title}>Verify Phone</Text>
-        <Text style={styles.subtitle}>OTP has been sent to {phone}</Text>
+        <Text style={styles.subtitle}>OTP has been sent to {countrycode}{phone}</Text>
 
         <View style={styles.otpContainer}>
           {otp.map((digit, index) => (

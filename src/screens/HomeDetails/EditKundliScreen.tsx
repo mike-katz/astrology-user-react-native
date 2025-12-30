@@ -27,12 +27,14 @@ const EditKundliScreen = ({ navigation, route }: any) => {
      const colorScheme = useColorScheme();
      const dispatch = useDispatch();
     const [name, setName] = useState(item.name);
-    const [gender, setGender] = useState(item.gender.toUpperCase());
+    const [gender, setGender] = useState(
+  (item?.gender ?? 'Male').toUpperCase()
+);
     const [showGenderOptions, setShowGenderOptions] = useState(false);
     const dateFormatted = moment(item.dob).format("DD MMM YY");
     const timeFormate = moment(item.birth_time,"HH:mm:ss").format("hh:mm A");
     const [date, setDate] = useState(dateFormatted);
-    const [time, setTime] = useState(timeFormate);
+    const [time, setTime] = useState(timeFormate||Date());
     const [showDatePickerModal, setShowDatePickerModal] = useState(false);
     const [showTimePickerModal, setShowTimePickerModal] = useState(false);
 
@@ -228,7 +230,7 @@ const validateForm = () => {
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
-                <View style={{ flex: 1, backgroundColor: "#F8F8E8" }}>
+                <View style={{ flex: 1, }}>
                     {/* Header */}
                     <View style={styles.header}>
                         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -362,7 +364,11 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: "row",
         alignItems: "center",
-        padding: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 7,
+        backgroundColor:'#FFF',
+        borderBottomWidth:.5,
+        borderBottomColor:'gray',
     },
     headerTitle: {
         fontSize: 20,

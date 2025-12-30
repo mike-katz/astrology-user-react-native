@@ -18,7 +18,7 @@ import { clearProfileList, removeProfileListItem, setProfileList } from '../../r
 import moment from 'moment';
 import { CustomDialogManager2 } from '../../utils/CustomDialog2';
 import { decryptData, secretKey } from '../../services/requests';
-import { Fonts } from '../../styles';
+import { colors, Fonts } from '../../styles';
 
 const MAX_PROFILES = 5;
 type Props = {
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#3B82F6',
+    backgroundColor: colors.primaryColor,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 16,
     right: 16,
-    backgroundColor: '#FACC15',
+    backgroundColor: colors.primaryColor,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',

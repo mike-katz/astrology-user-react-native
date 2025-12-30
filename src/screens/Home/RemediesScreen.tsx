@@ -98,23 +98,26 @@ React.useEffect(() => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: Platform.OS==='android'?0:0 || 0,
+    marginTop: 0,
   },
   header: {
       flexDirection: 'row',
       justifyContent:'center',
       alignItems: 'center',
       paddingHorizontal: 16,
-      paddingVertical: 5,
+      paddingVertical: 7,
+      backgroundColor:'#FFF',
+      borderBottomWidth:.4,
+      borderBottomColor:'gray',
     },
   
 profileWrapper: {
     width: 35,
     height: 35,
     borderRadius: 35 / 2,
-    backgroundColor: '#FFFAE6',        // light yellow fill
+    backgroundColor: colors.primaryLightColor,        
     borderWidth: 2,
-    borderColor: colors.primaryColor,           // yellow border
+    borderColor: colors.primaryBorderColor,         
     alignItems: 'center',
     justifyContent: 'center',
   },

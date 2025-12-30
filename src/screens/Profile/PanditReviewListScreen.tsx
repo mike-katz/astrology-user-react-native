@@ -302,10 +302,13 @@ rightBox: {
     borderColor: '#EDEDED',
   },
   row: { flexDirection: 'row', alignItems: 'center' },
-  avatar: { width: 45, height: 45, borderRadius: 22,
-        backgroundColor: '#FFFAE6',        // light yellow fill
+  avatar: { 
+    width: 45, 
+    height: 45, 
+    borderRadius: 22,
+    backgroundColor: colors.primaryLightColor,        // light yellow fill
     borderWidth: 1,
-    borderColor: colors.primaryColor, 
+    borderColor: colors.primaryBorderColor, 
    },
   name: { marginLeft: 10, fontSize: 16, fontWeight: '600', color: '#000' },
 

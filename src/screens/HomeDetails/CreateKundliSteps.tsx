@@ -100,7 +100,7 @@ const CreateKundliSteps = () => {
                                 disabled={!isActive}
                                 style={[
                                     styles.dot,
-                                    { backgroundColor: isActive ? '#FBB917' : '#D6D6D6' }
+                                    { backgroundColor: isActive ? colors.primaryColor : '#D6D6D6' }
                                 ]}
                             >
                                 {isActive && <IconComponent width={8} height={8} />}

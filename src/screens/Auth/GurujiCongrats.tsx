@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    color: '#FBB917',
+    color: colors.primaryColor,
     fontWeight: '700',
     textAlign: 'center',
     marginTop: 20,

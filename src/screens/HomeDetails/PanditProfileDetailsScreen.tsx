@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -164,6 +164,25 @@ const showChatWithAssistant = () => {
     navigation.push('PanditReviewListScreen',{astrologerId:astrologerId,astroName:astrologersDetails.name});
   }
 
+  const bottomAnim = useRef(new Animated.Value(1)).current;
+  const [isScrolling, setIsScrolling] = useState(false);
+  
+  const hideBottom = () => {
+    Animated.timing(bottomAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  };
+  
+  const showBottom = () => {
+    Animated.timing(bottomAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  };
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
@@ -183,7 +202,21 @@ const showChatWithAssistant = () => {
             </TouchableOpacity>
             <View style={{ position: 'absolute', width: '100%', height: .4, backgroundColor: '#7B7B7B', bottom: 0 }}></View>
           </Animated.View>
-         {(activity || !astrologersDetails?.id) ? ( <View/> ):(<ScrollView showsVerticalScrollIndicator={false}>
+         {(activity || !astrologersDetails?.id) ? ( <View/> ):(<ScrollView showsVerticalScrollIndicator={false}
+           onScrollBeginDrag={() => {
+    setIsScrolling(true);
+    hideBottom();
+  }}
+  onScrollEndDrag={() => {
+    setIsScrolling(false);
+    showBottom();
+  }}
+  onMomentumScrollBegin={() => {
+    hideBottom();
+  }}
+  onMomentumScrollEnd={() => {
+    showBottom();
+  }}>
           {/* ---------- Top Card ---------- */}
           <View style={styles.profileContainer}>
             {/* RIBBON */}
@@ -360,20 +393,34 @@ const showChatWithAssistant = () => {
         </ScrollView>)}
 
         {/* ---------- Bottom Buttons ---------- */}
-        <View style={styles.bottomBar}>
+                  <Animated.View
+          style={[
+            styles.bottomBar,
+            {
+              transform: [
+                {
+                  translateY: bottomAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [120, 0], // move down when hidden
+                  }),
+                },
+              ],
+              opacity: bottomAnim,
+            },
+          ]}>
           <TouchableOpacity style={styles.chatBtn}>
-            <ChatIcon color="#1C9659" width={23} height={23} style={styles.minutesIcon}/>
+            <ChatIcon color={colors.primaryColor} width={23} height={23} style={styles.minutesIcon}/>
             <Text style={styles.chatBtnText}>Chat</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.callBtn}>
-            <CallIcon color="#1C9659" width={21} height={21} style={styles.minutesIcon}/>
+            <CallIcon color={colors.primaryColor} width={21} height={21} style={styles.minutesIcon}/>
             <View style={{alignItems:'center'}}>
               <Text style={styles.callBtnText}>Call</Text>
              {/* <Text style={styles.callSub}>Online in 18h 7m</Text>  */}
              </View>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
          <WalletBottomSheet
             visible={showWallet}
             onClose={() => setShowWallet(false)}
@@ -462,7 +509,7 @@ const styles = StyleSheet.create({
 ribbon: {
   width: 110,                       // long enough to cross the corner
   paddingVertical: 2,
-  backgroundColor: colors.primaryColor,       // same golden color
+  backgroundColor: '#000',       // same golden color
   transform: [{ rotate: "-45deg" }],// angle like screenshot
   justifyContent: "center",
   alignItems: "center",
@@ -673,7 +720,7 @@ ribbonText: {
   sendBtn: {
     flex: 1,
     height: 48,
-    backgroundColor: "#F7F1C3", // Light pastel yellow
+    backgroundColor: colors.primaryLightColor, // Light pastel yellow
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
@@ -690,12 +737,13 @@ ribbonText: {
   // Bottom Bar
   bottomBar: {
     flexDirection: "row",
-    padding: 12,
-    borderTopWidth: 1,
-    borderColor: "#eee",
-    backgroundColor: "#fff",
+    paddingHorizontal:6,
+    // padding: 12,
+    // borderTopWidth: 1,
+    // borderColor: "#eee",
+    // backgroundColor: "#fff",
     position: "absolute",
-    bottom: 0,
+    bottom: "4%",
     left: 0,
     right: 0,
   },
@@ -713,7 +761,7 @@ ribbonText: {
     shadowRadius: 6,
     elevation: 8,
   },
-  chatBtnText: { color: "#189018", fontSize: 16, fontWeight: "700",fontFamily: Fonts.SemiBold },
+  chatBtnText: { color: colors.primaryColor, fontSize: 16, fontWeight: "700",fontFamily: Fonts.SemiBold },
 
   callBtn: {
     flex: 1,
@@ -731,6 +779,6 @@ ribbonText: {
     shadowRadius: 6,
     elevation: 8,
   },
-  callBtnText: { color: "#189018", fontSize: 16, fontWeight: "700" ,fontFamily: Fonts.SemiBold},
+  callBtnText: { color: colors.primaryColor, fontSize: 16, fontWeight: "700" ,fontFamily: Fonts.SemiBold},
   callSub: { color: "#007AFF", fontSize: 12, marginTop: 2, fontWeight: "500" ,fontFamily: Fonts.Medium},
 });

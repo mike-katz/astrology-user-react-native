@@ -10,10 +10,11 @@ import {
   FlatList,
   PanResponder,
   Alert,
+  Platform,
 } from "react-native";
 import FastImage from "react-native-fast-image";
 import Feather from "react-native-vector-icons/Feather";
-import { Fonts } from "../styles";
+import { colors, Fonts } from "../styles";
 
 const { height } = Dimensions.get("window");
 
@@ -147,14 +148,15 @@ export default function YellowWaitlistSheet({
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    bottom: 80,
+    bottom: Platform.OS === 'android' ? 106 : 103,
     height: MAX_HEIGHT,
     width: "100%",
-    backgroundColor: "#FFF6C7",
+    backgroundColor: colors.primaryLightColor,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     elevation: 12,
     zIndex: 999,
+
   },
 
   arrow: {
@@ -162,10 +164,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 6,
     marginTop: -20,
-    backgroundColor: "#FFF6C7",
-    borderRadius: 25,
+    backgroundColor: colors.primaryLightColor,
+    borderRadius: 30,
     width: 50,
-    height: 40
+    height: 50
   },
 
   row: {
@@ -183,7 +185,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     marginRight: 12,
     borderWidth: 1.5,
-    borderColor: "#F3E58C",
+    borderColor: colors.primaryBorderColor,
   },
 
   name: {

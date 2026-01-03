@@ -215,13 +215,13 @@ const handleStartChat = (item:any)=>{
     <Pressable style={styles.cardWrap} onPress={() => navigation.push('PanditProfileDetailsScreen', { astrologerId: item.id })}>
       <View style={styles.card}>
         {/* RIBBON */}
-        <View style={styles.ribbonContainer}>
+        {item.tag!=null && item.tag!=undefined && <View style={styles.ribbonContainer}>
           <View style={styles.ribbon}>
             <View style={styles.ribbonTextWrapper}>
-              <Text style={styles.ribbonText}>*Celebrity*</Text>
+              <Text style={styles.ribbonText}>{item.tag}</Text>
             </View>
           </View>
-        </View>
+        </View>}
         <View style={styles.left}>
           <FastImage source={{ uri: item.profile }} style={[styles.avatar, { borderColor: activeFilterColor }]} />
           <View style={styles.metaRow}>
@@ -423,7 +423,18 @@ const handleStartChat = (item:any)=>{
           </TouchableOpacity>
           <Text style={styles.welcomeText}>Hi, {userDetailsData.name || "User"}</Text>
 
-          <TouchableOpacity style={styles.addCashBtn} onPress={() => navigation.push('AddMoneyScreen')}>
+          <TouchableOpacity style={styles.addCashBtn} onPress={() => 
+            {
+                  if(ServiceConstants.User_ID!=null){
+                                                    navigation.push('AddMoneyScreen');
+                                                  }else {
+                                                    navigation.reset({
+                                                                    index: 0,
+                                                                    routes: [{ name: 'AuthStack' }]
+                                                                  });
+                                                  }
+              }
+            }>
             <WalletIcon width={12} height={12}
               style={styles.walletIcon}
             />
@@ -439,7 +450,18 @@ const handleStartChat = (item:any)=>{
               width={30} height={30}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => Alert.alert('OrderHistory clicked')} style={{ backgroundColor: '#FFF', padding: 3, borderRadius: 30 }}>
+          <TouchableOpacity onPress={() => {
+               
+                  if(ServiceConstants.User_ID!=null){
+                    navigation.push('OrderHistoryScreen');
+                  }else {
+                    navigation.reset({
+                                    index: 0,
+                                    routes: [{ name: 'AuthStack' }]
+                                  });
+                  }
+              
+          }} style={{ backgroundColor: '#FFF', padding: 3, borderRadius: 30 }}>
             <OrderHistoryIcon
               width={30} height={30}
             />
@@ -480,11 +502,11 @@ const handleStartChat = (item:any)=>{
           onApply={handleApplyFilters}
         />
 
-                    <ProfileSelector
-                name={selectedName} 
-                visible={profileSelector} 
-                onClose={handleCloseProfile} 
-                onStartChat={handleStartChat} />
+        {ServiceConstants.User_ID!=null &&<ProfileSelector
+          name={selectedName} 
+          visible={profileSelector} 
+          onClose={handleCloseProfile} 
+          onStartChat={handleStartChat} />}
 
         <SlideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
         <AppSpinner show={activity} />

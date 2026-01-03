@@ -99,7 +99,7 @@ useFocusEffect(
             setSelectedId(profilelist[0].id);
         } 
                   if(Platform.OS==='ios'){
- Alert.alert(
+        Alert.alert(
                   "Profile Deleted",
                   result.message,
                   [
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   },
 
   selectedCard: {
-    borderColor: '#22C55E',
+    borderColor: colors.primaryColor,
     borderWidth: 2,
   },
 

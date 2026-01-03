@@ -164,7 +164,9 @@ const buildNumber = DeviceInfo.getBuildNumber(); // e.g. "101"
     )}
 
                 <Animated.View style={[styles.container, { left: slideAnim }]}>
-                <ScrollView showsVerticalScrollIndicator={false}>
+                <ScrollView 
+                contentContainerStyle={{paddingBottom:Platform.OS==='ios'?60:0}} 
+                showsVerticalScrollIndicator={false}>
 
                     {/* HEADER */}
                     <View style={styles.header}>
@@ -193,7 +195,7 @@ const buildNumber = DeviceInfo.getBuildNumber(); // e.g. "101"
                     </View>
 
                     {/* MENU LIST */}
-                    <View style={{ marginTop: Platform.OS==='ios'?30:10 }}>
+                    <View style={{ marginTop: Platform.OS==='ios'?0:10 }}>
                     {MENU_ITEMS.map((item, i) => (
                         <TouchableOpacity key={i} style={styles.menuRow} onPress={()=>handleMenuClick(item)}>
                         <Icon name={item.icon} size={22} color="#444" />
@@ -290,7 +292,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 20,
-    top:Platform.OS==='ios'?'5%':'3%'
+    top:5
   },
   profileImg: {
     width: 65,

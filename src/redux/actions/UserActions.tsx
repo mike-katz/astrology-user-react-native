@@ -503,7 +503,6 @@ export const updateTokenApi = async (token: any) => {
     }else{
       return response;
     }
-  return null;
 };
 
 export const getOrderList = async (pagenum:any) => {

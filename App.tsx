@@ -5,7 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './src/screens/Auth/LoginScreen';
 import VerifyOtpScreen from './src/screens/Auth/VerifyOtpScreen';
-import { Alert, PermissionsAndroid, Platform, StatusBar } from 'react-native';
+import { Alert, PermissionsAndroid, Platform, StatusBar, useColorScheme } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import CustomTabBar from './src/utils/CustomTabBar';
 
@@ -15,7 +15,7 @@ import { store } from './src/redux/store';
 import { asyncLoginAction } from './src/redux/actions/UserActions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomToast from './src/utils/CustomToast';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider,SafeAreaView } from 'react-native-safe-area-context';
 import CustomDialog from './src/utils/CustomDialog';
 import CustomDialogComponent from './src/utils/CustomDialog2';
 
@@ -111,8 +111,14 @@ const AuthStackNavigator = () => (
 
 
 // Main Tabs Navigator
-const MainTabsNavigator = () => (
-
+const MainTabsNavigator = () => {
+  const isDark = useColorScheme() === "dark";
+  return(
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFF" }}>
+      <StatusBar
+        backgroundColor="#FFFFFF"   // Android only
+        barStyle="dark-content"     // Android + iOS
+      />
   <Tab.Navigator
     tabBar={props => <CustomTabBar {...props} />}
     screenOptions={({ route }) => ({
@@ -128,9 +134,9 @@ const MainTabsNavigator = () => (
     <Tab.Screen name="Call" component={CallScreen} />
     <Tab.Screen name="Remedies" component={RemediesScreen} />
   </Tab.Navigator>
+</SafeAreaView>
 
-
-);
+)};
 
 const RootNavigator = ({ initialRoute }: { initialRoute: keyof RootStackParamList }) => {
   return (

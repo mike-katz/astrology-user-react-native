@@ -41,6 +41,7 @@ import ParentsIcon from '../../assets/icons/ParentsIcon';
 import { SlideMenu } from './SlideMenu';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
+import { ServiceConstants } from '../../services/ServiceConstants';
 
 const { width } = Dimensions.get('window');
 const BANNER_HEIGHT = 55;
@@ -419,7 +420,16 @@ Alert.alert("Selected Options", message);
       </TouchableOpacity>
         <Text style={styles.welcomeText}>Hi, {userDetailsData.name || "User"}</Text>
 
-        <TouchableOpacity style={styles.addCashBtn} onPress={() => navigation.push('AddMoneyScreen')}>
+        <TouchableOpacity style={styles.addCashBtn} onPress={() => {
+              if(ServiceConstants.User_ID!=null){
+                navigation.push('AddMoneyScreen');
+              }else {
+                navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'AuthStack' }]
+                              });
+              }
+        }}>
            <WalletIcon width={12} height={12}
             style={styles.walletIcon}
           />
@@ -435,7 +445,16 @@ Alert.alert("Selected Options", message);
             width={30} height={30}
           />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => Alert.alert('OrderHistory clicked')} style={{ backgroundColor:'#FFF',padding:3,borderRadius:30 }}>
+        <TouchableOpacity onPress={() => {
+              if(ServiceConstants.User_ID!=null){
+                              navigation.push('OrderHistoryScreen');
+                            }else {
+                              navigation.reset({
+                                              index: 0,
+                                              routes: [{ name: 'AuthStack' }]
+                                            });
+                            }
+        }} style={{ backgroundColor:'#FFF',padding:3,borderRadius:30 }}>
           <OrderHistoryIcon
             width={30} height={30}
           />

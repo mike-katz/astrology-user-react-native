@@ -148,7 +148,7 @@ export default function YellowWaitlistSheet({
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    bottom: Platform.OS === 'android' ? 106 : 103,
+    bottom: Platform.OS === 'android' ? 75 : 65,
     height: MAX_HEIGHT,
     width: "100%",
     backgroundColor: colors.primaryLightColor,

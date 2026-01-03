@@ -10,6 +10,7 @@ import { StarRating } from '../../constant/Helper';
 import { formatKnowledge } from '../../constant/AppConst';
 import RightGreenIcon from '../../assets/icons/RightGreenIcon';
 import { getPandit } from '../../redux/actions/UserActions';
+import { ServiceConstants } from '../../services/ServiceConstants';
 
 const SearchScreen = () => {
     const navigation = useNavigation<any>();
@@ -140,22 +141,70 @@ const SearchScreen = () => {
 
                 <View style={styles.quickLinkRow}>
 
-                    <TouchableOpacity style={styles.quickCard} onPress={ ()=>navigation.push('AddMoneyScreen')}>
+                    <TouchableOpacity style={styles.quickCard} onPress={ ()=>{
+                                if(ServiceConstants.User_ID!=null){
+                                      navigation.push('AddMoneyScreen');
+                                    }else {
+                                      navigation.reset({
+                                                      index: 0,
+                                                      routes: [{ name: 'AuthStack' }]
+                                                    });
+                                    }
+                    }
+                      
+                      
+                      }>
                         <Text style={styles.cardIcon}>👛</Text>
                         <Text style={styles.cardText}>Wallet</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.quickCard} onPress={ ()=>navigation.push('HelpSupportScreen')}>
+                    <TouchableOpacity style={styles.quickCard} onPress={ ()=>
+                      {
+                            if(ServiceConstants.User_ID!=null){
+                                      navigation.push('HelpSupportScreen');
+                                    }else {
+                                      navigation.reset({
+                                                      index: 0,
+                                                      routes: [{ name: 'AuthStack' }]
+                                                    });
+                                    }
+                      }
+                      
+                      
+                      }>
                         <Text style={styles.cardIcon}>🎧</Text>
                         <Text style={styles.cardText}>Customer Support</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.quickCard} onPress={ ()=>navigation.push('OrderHistoryScreen')}>
+                    <TouchableOpacity style={styles.quickCard} onPress={ ()=>
+                      {
+                                 if(ServiceConstants.User_ID!=null){
+                                      navigation.push('OrderHistoryScreen');
+                                    }else {
+                                      navigation.reset({
+                                                      index: 0,
+                                                      routes: [{ name: 'AuthStack' }]
+                                                    });
+                                    }
+                      }
+                      
+                      
+                      }>
                         <Text style={styles.cardIcon}>🛒</Text>
                         <Text style={styles.cardText}>Order History</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.quickCard} onPress={ ()=>navigation.push('EditProfileScreen')}>
+                    <TouchableOpacity style={styles.quickCard} onPress={ ()=>{
+                                   if(ServiceConstants.User_ID!=null){
+                                      navigation.push('EditProfileScreen');
+                                    }else {
+                                      navigation.reset({
+                                                      index: 0,
+                                                      routes: [{ name: 'AuthStack' }]
+                                                    });
+                                    }
+                    }
+                      }>
                         <Text style={styles.cardIcon}>👤</Text>
                         <Text style={styles.cardText}>Profile</Text>
                     </TouchableOpacity>

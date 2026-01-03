@@ -22,7 +22,7 @@ const GurujiCongrats = () => {
           {/* Logo */}
           <View style={styles.logoContainer}>
             <Image
-              source={require('../../assets/icons/astrologer_logo.png')}
+              source={require('../../assets/icons/AstroGurujiLogoApp.png')}
               style={styles.logo}
             />
           </View>
@@ -32,7 +32,7 @@ const GurujiCongrats = () => {
         Astrotalk{'\n'}
         <Text style={styles.title}>Guruji</Text>
       </Text> */}
-       <AstrotalkGuruji />
+       {/* <AstrotalkGuruji /> */}
 
       {/* Congratulations Text */}
       <Text style={styles.congratsText}>
@@ -64,19 +64,17 @@ const styles = StyleSheet.create({
   },
   exploreText: {
     alignSelf: 'flex-end',
-    marginTop: 10,
+    marginTop: '15%',
     fontSize: 14,
     color: '#555',
     fontFamily:Fonts.SemiBold
   },
     logoContainer: {
-    marginTop: 40,
-    marginBottom: 15,
+    marginTop: '45%',
   },
   logo: {
-    width: 160,
-    height: 160,
-    marginTop: 40,
+    width: 210,
+    height: 210,
   },
   title: {
     fontSize: 32,
@@ -88,7 +86,7 @@ const styles = StyleSheet.create({
     fontFamily:Fonts.SemiBold
   },
   congratsText: {
-    fontSize: 18,
+    fontSize: 23,
     fontWeight: '700',
     color: '#000',
     marginTop: 40,
@@ -96,7 +94,7 @@ const styles = StyleSheet.create({
       fontFamily:Fonts.SemiBold
   },
   freeChatText: {
-    fontSize: 18,
+    fontSize: 23,
     fontWeight: '700',
     color: colors.primaryColor,
     marginTop: 5,
@@ -108,7 +106,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryColor,
     paddingVertical: 14,
     borderRadius: 30,
-    marginBottom: 30,
+    marginBottom: '16%',
     shadowColor: '#000',
     shadowOpacity: 0.2,
     shadowRadius: 6,
@@ -117,9 +115,9 @@ const styles = StyleSheet.create({
   },
   startBtnText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#000',
     textAlign: 'center',
-    fontFamily:Fonts.Medium
+    fontFamily:Fonts.SemiBold
   },
 });

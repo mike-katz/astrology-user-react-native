@@ -660,7 +660,7 @@ midTabTextActive: {
 
   bottomContainer: {
       position: 'absolute',
-      bottom: '15%',   // <-- PLACE ABOVE YOUR TAB BAR
+      bottom: '10%',   // <-- PLACE ABOVE YOUR TAB BAR
       width: width,
       paddingHorizontal: 16,
       flexDirection: 'row',

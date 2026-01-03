@@ -12,13 +12,13 @@ import { StarRating } from '../../constant/Helper';
 import FastImage from 'react-native-fast-image';
 import { CustomDialogManager2 } from '../../utils/CustomDialog2';
 
-const ratingData = [
-  { stars: 5, percent: 90 },
-  { stars: 4, percent: 6 },
-  { stars: 3, percent: 3 },
-  { stars: 2, percent: 1 },
-  { stars: 1, percent: 0 },
-];
+// const ratingData = [
+//   { stars: 5, percent: 90 },
+//   { stars: 4, percent: 6 },
+//   { stars: 3, percent: 3 },
+//   { stars: 2, percent: 1 },
+//   { stars: 1, percent: 0 },
+// ];
 
 export default function PanditReviewListScreen({route}: any) {
     const { astrologerId , astroName } = route.params;
@@ -30,8 +30,9 @@ export default function PanditReviewListScreen({route}: any) {
     const [page, setPage] = useState(1);
     const [refreshing, setRefreshing] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
-
-
+    const [averageRating, setAverageRating] = useState<any>(0);
+    const [totalOrders, setTotalOrders] = useState<any>(0);
+    const [ratingData, setRatingData] = useState<any[]>([]);
     const handleBack = () => {
         navigation.goBack();
     }
@@ -49,6 +50,46 @@ export default function PanditReviewListScreen({route}: any) {
         setLoadingMore(false);
       }
       setReviews(prev => [...prev, ...(result.data.results)]);
+ 
+
+      if(pageNo===1){
+        console.log();
+        setTotalOrders(result.data.panditDetail.total_orders);
+        const totalRatings =
+                    result.data.panditDetail.rating_1 +
+                    result.data.panditDetail.rating_2 +
+                    result.data.panditDetail.rating_3 +
+                    result.data.panditDetail.rating_4 +
+                    result.data.panditDetail.rating_5;
+
+        const ratingData = [
+            { stars: 5, count: result.data.panditDetail.rating_5 },
+            { stars: 4, count: result.data.panditDetail.rating_4 },
+            { stars: 3, count: result.data.panditDetail.rating_3 },
+            { stars: 2, count: result.data.panditDetail.rating_2 },
+            { stars: 1, count: result.data.panditDetail.rating_1 },
+          ].map(item => ({
+            stars: item.stars,
+            percent: totalRatings
+              ? Math.round((item.count / totalRatings) * 100)
+              : 0,
+          }));
+          // Alert.alert(""+JSON.stringify(ratingData))
+          setRatingData(ratingData);
+
+          const averageRating = totalRatings
+              ? (
+                  (5 * result.data.panditDetail.rating_5 +
+                    4 * result.data.panditDetail.rating_4 +
+                    3 * result.data.panditDetail.rating_3 +
+                    2 * result.data.panditDetail.rating_2 +
+                    1 * result.data.panditDetail.rating_1) /
+                  totalRatings
+                ).toFixed(1)
+              : 0;
+              setAverageRating(averageRating);
+
+      }
       
     });
   };
@@ -82,13 +123,13 @@ export default function PanditReviewListScreen({route}: any) {
       {/* Header card */}
       <View style={styles.ratingCard}>
         <View style={styles.leftBox}>
-          <Text style={styles.bigRating}>4.97</Text>
+          <Text style={styles.bigRating}>{averageRating}</Text>
           <View style={styles.starRow}>
             {Array(5).fill(0).map((_, i) => (
               <Feather key={i} name="star" size={20} color={colors.primaryColor} />
             ))}
           </View>
-          <Text style={styles.orderText}>13734 orders</Text>
+          <Text style={styles.orderText}>{totalOrders} orders</Text>
         </View>
 
         {/* Rating bars */}
@@ -100,8 +141,8 @@ export default function PanditReviewListScreen({route}: any) {
               <View style={styles.barBackground}>
                 <View style={[styles.barFill, { width: `${item.percent}%` }]} />
               </View>
-
-              <Text style={styles.percentText}>{item.percent}%</Text>
+              <View style={{width:10}}/>
+              {/* <Text style={styles.percentText}>{item.percent}%</Text> */}
             </View>
           ))}
         </View>
@@ -241,6 +282,7 @@ header: {
     borderRadius: 14,
     margin: 14,
     elevation: 2,
+    paddingBottom:12
   },
 
 leftBox: {
@@ -290,7 +332,7 @@ rightBox: {
     borderRadius: 10,
     backgroundColor: '#2AC066', // same green shade
   },
-  percentText: { width: 42, fontSize: 13, color: '#444' },
+  percentText: { width: 42, fontSize: 13, color: 'transparent' },
 
   reviewCard: {
     backgroundColor: '#fff',

@@ -220,7 +220,10 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    height:50,
+    // marginBottom: 20,
+    borderBottomColor:'gray',
+    borderBottomWidth:.4
   },
   backBtn: {
       width: 60,

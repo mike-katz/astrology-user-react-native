@@ -124,7 +124,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       if (socketRef.current?.readyState === WebSocket.OPEN) {
         socketRef.current.close(); // 🔧 ONLY CLOSE
       }
-    }, 30000);
+    }, 60000);
 
     return () => {
       shouldReconnectRef.current = false;

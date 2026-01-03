@@ -489,8 +489,8 @@ useFocusEffect(
                 <View style={styles.card}>
                   <View style={styles.cardRow}>
                     <Text style={styles.cardTitle}>{item.message}</Text>
-                    <Text style={[styles.cardAmount,{ color: amount < 0 ? '#E53935' : '#2E7D32' }]}>{amount < 0 ? `-₹ ${Math.abs(amount)}` : `+₹ ${amount}`}</Text> 
-                    {/* +₹ */}
+                    <View><Text style={[styles.cardAmount,{ color: amount < 0 ? '#E53935' : '#2E7D32' }]}>{amount < 0 ? `-₹ ${Math.abs(amount)}` : `+₹ ${amount}`}</Text> 
+                      <Text style={{color:'gray',fontSize:12,fontFamily:Fonts.Medium}}>(GST {item.gst})</Text></View>
                   </View>
 
                   <Text style={styles.cardDate}>{moment(item.created_at).format("DD MMM YYYY, hh:mm A")}</Text>
@@ -527,8 +527,9 @@ useFocusEffect(
                 <View style={styles.card}>
                   <View style={styles.cardRow}>
                     <Text style={styles.cardTitle}>{item.type.toUpperCase()}{"\n"}{item.status.toUpperCase()}</Text>
-                    <Text style={[styles.cardAmount,{ color: amount < 0 ? '#E53935' : '#2E7D32' }]}>{amount < 0 ? amount : `+₹ ${amount}`}{"\n"}({item.gst})</Text> 
-                    {/* +₹ */}
+                    <View><Text style={[styles.cardAmount,{ color: amount < 0 ? '#E53935' : '#2E7D32' }]}>{amount < 0 ? amount : `+₹ ${amount}`}</Text> 
+                    <Text style={{color:'gray',fontSize:12,fontFamily:Fonts.Medium}}>(GST {item.gst})</Text></View>
+                    
                   </View>
 
                   <Text style={styles.cardDate}>{moment(item.created_at).format("DD MMM YYYY, hh:mm A")}</Text>

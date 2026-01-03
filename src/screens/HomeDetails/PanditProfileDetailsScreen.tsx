@@ -44,6 +44,7 @@ export default function PanditProfileDetailsScreen({route}:any) {
   const [selectedGift, setSelectedGift] = useState<number | null>(null);
   const [showWallet, setShowWallet] = useState(false); //For Wallet
   const [reviews, setReviews] = useState<any[]>([]);
+  const [averageRating, setAverageRating] = useState<any>(0);
 
   const gifts = [
     { name: "Flowers", price: "₹15", img: require("../../assets/images/Gift1.png") },
@@ -123,6 +124,25 @@ const showChatWithAssistant = () => {
       setIsFollowed(result.data.isFollow);
       setAstrologersDetails(result.data);
       setReviews(result.data.reviews || []);
+
+              const totalRatings =
+                    result.data.rating_1 +
+                    result.data.rating_2 +
+                    result.data.rating_3 +
+                    result.data.rating_4 +
+                    result.data.rating_5;
+
+                const averageRating = totalRatings
+              ? (
+                  (5 * result.data.rating_5 +
+                    4 * result.data.rating_4 +
+                    3 * result.data.rating_3 +
+                    2 * result.data.rating_2 +
+                    1 * result.data.rating_1) /
+                  totalRatings
+                ).toFixed(1)
+              : 0;
+              setAverageRating(averageRating);
       console.log('Pandit Details Result:', result);
     });
   }
@@ -220,21 +240,21 @@ const showChatWithAssistant = () => {
           {/* ---------- Top Card ---------- */}
           <View style={styles.profileContainer}>
             {/* RIBBON */}
-            <View style={styles.ribbonContainer}>
+           {astrologersDetails.tag!=null && astrologersDetails.tag!=undefined && <View style={styles.ribbonContainer}>
               <View style={styles.ribbon}>
                 <View style={styles.ribbonTextWrapper}>
-                <Text style={styles.ribbonText}>*Celebrity*</Text>
+                <Text style={styles.ribbonText}>{astrologersDetails.tag}</Text>
                 </View>
               </View>
-            </View>
+            </View>}
             <View style={styles.profileCard}>
               <View style={{ alignItems: "center" }}  >
               <FastImage
                 source={{ uri: astrologersDetails.profile as any }}
                 style={styles.profileImg}
               />
-              <StarRating size={12} rating={4} />
-              <Text style={styles.orders}>{astrologersDetails.orders} orders</Text>
+              <StarRating size={12} rating={averageRating} />
+              <Text style={styles.orders}>{astrologersDetails.total_orders} orders</Text>
               </View>
               <View style={{ flex: 1 }}>
                 <View style={styles.nameRow}>
@@ -261,7 +281,7 @@ const showChatWithAssistant = () => {
                 <Text style={styles.subText}>{formatKnowledge(astrologersDetails.knowledge)}</Text>
                 <Text style={styles.subText}>{formatKnowledge(astrologersDetails.language)}</Text>
                 <Text style={styles.subText}>Exp - {astrologersDetails.experience} years</Text>
-                <Text style={styles.price}>₹ {astrologersDetails.charge}/min</Text>
+                <Text style={styles.price}>₹ {astrologersDetails.chat_rate}/min</Text>
                 {/* <View style={styles.priceRow}>
                   <Text style={styles.oldPrice}>₹ {astrologersDetails.charge}</Text>
                   <Text style={styles.newPrice}>{astrologersDetails.charge}/min</Text>
@@ -274,13 +294,13 @@ const showChatWithAssistant = () => {
             <View style={styles.minutesCard}>
               <View style={styles.minutesItem}>
                 <ChatIcon width={23} height={23} style={styles.minutesIcon}/>
-                <Text style={styles.minutesValue}>{astrologersDetails.totalChat || 0} </Text>
+                <Text style={styles.minutesValue}>{astrologersDetails.total_chat_minutes || 0} </Text>
                 <Text style={styles.minutesLabel}>min</Text>
               </View>
               <View style={{borderWidth:.6,borderColor:'gray',width:.6,height:25}}/>
               <View style={styles.minutesItem}>
                  <CallIcon width={21} height={21} style={styles.minutesIcon}/>
-                <Text style={styles.minutesValue}>{astrologersDetails.totalCall || 0} </Text>
+                <Text style={styles.minutesValue}>{astrologersDetails.total_call_minutes || 0} </Text>
                 <Text style={styles.minutesLabel}>min</Text>
               </View>
             </View>
@@ -743,7 +763,7 @@ ribbonText: {
     // borderColor: "#eee",
     // backgroundColor: "#fff",
     position: "absolute",
-    bottom: "4%",
+    bottom: "2%",
     left: 0,
     right: 0,
   },

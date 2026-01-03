@@ -13,7 +13,8 @@ import {
   Pressable,
   Alert,
   useColorScheme,
-  Animated
+  Animated,
+  StatusBar
 } from 'react-native';
 import  NitroSound  from 'react-native-nitro-sound';
 import MenuIcon from '../../assets/icons/MenuIcon';
@@ -145,16 +146,22 @@ const callBalance =()=>{
     const initFCM = async () => {
       const token = await getFcmTokenAfterLogin();
       if (token) {
-        updateTokenApi(token).then(response => {
-        const result = JSON.parse(response);
-        if(result.success===true){
-           console.log("Update Token Successfully ==>" +JSON.stringify(result));
-        }else{
-            const result2 = decryptData(result.error,secretKey);
-            const result3 = JSON.parse(result2);
-            console.log("Update Token Error response ==>" +JSON.stringify(result3));
+        if(ServiceConstants.User_ID!=null){
+
+            updateTokenApi(token).then(response => {
+              const result = JSON.parse(response);
+              if(result.success===true){
+                console.log("Update Token Successfully ==>" +JSON.stringify(result));
+              }else{
+                  const result2 = decryptData(result.error,secretKey);
+                  const result3 = JSON.parse(result2);
+                  console.log("Update Token Error response ==>" +JSON.stringify(result3));
+              }
+            });
+
+
         }
-      });
+
       }
     };
 
@@ -421,10 +428,15 @@ const handleStartChat = (item:any)=>{
   createOrderChatApi(selectedId,item.id);
 }
 
+const isDark = useColorScheme() === "dark";
+
     return(
     <SafeAreaProvider>
         <SafeAreaView style={styles.container}>
-
+<StatusBar
+  backgroundColor={isDark ? "#000" : "#FFF"}
+  barStyle={isDark ? "light-content" : "dark-content"}
+/>
       {/* Header */}
       <View style={styles.header}>
         {/* Profile Image wrapper */}
@@ -447,7 +459,19 @@ const handleStartChat = (item:any)=>{
 
         <Text style={styles.welcomeText}>Hi, {userDetailsData.name || "User"}</Text>
 
-        <TouchableOpacity style={styles.addCashBtn} onPress={() => navigation.push('AddMoneyScreen')}>
+        <TouchableOpacity style={styles.addCashBtn} onPress={() => 
+          {
+            if(ServiceConstants.User_ID!=null){
+              navigation.push('AddMoneyScreen')
+            }else {
+                  navigation.reset({
+                              index: 0,
+                              routes: [{ name: 'AuthStack' }]
+                            });
+            }
+            
+
+          }}>
            <WalletIcon width={12} height={12}
             style={styles.walletIcon}
           />
@@ -460,7 +484,21 @@ const handleStartChat = (item:any)=>{
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.push('HelpSupportScreen')} style={{ backgroundColor:'#FFF',padding:3,borderRadius:30 }}>
+        <TouchableOpacity onPress={() =>
+        {
+                 if(ServiceConstants.User_ID!=null){
+                    navigation.push('HelpSupportScreen');
+                  }else {
+                    navigation.reset({
+                                    index: 0,
+                                    routes: [{ name: 'AuthStack' }]
+                                  });
+                  }
+
+        }
+           
+           
+           } style={{ backgroundColor:'#FFF',padding:3,borderRadius:30 }}>
           <HelpIcon
             width={30} height={30}
           />
@@ -484,7 +522,7 @@ const handleStartChat = (item:any)=>{
     showBottom();
   }}>
 
-    <Pressable style={styles.wrapper} onPress={() => {
+    <Pressable style={styles.wrapper} onPress={() => {      
       navigation.push('SearchScreen');
       // navigation.push('ChatWindow', { astrologerId: 1,orderId:1 })
       // navigation.push('SoundScreen')
@@ -564,13 +602,13 @@ const handleStartChat = (item:any)=>{
           {/* <View style={styles.badge}>
             <Text style={styles.badgeText}>{'*Celebrity*'}</Text>
             </View> */}
-            <View style={styles.ribbonContainer}>
+            {item.tag!=null && item.tag!=undefined && <View style={styles.ribbonContainer}>
               <View style={styles.ribbon}>
                 <View style={styles.ribbonTextWrapper}>
-                <Text style={styles.ribbonText}>Top Choice</Text>
+                <Text style={styles.ribbonText}>{item.tag}</Text>
                 </View>
               </View>
-            </View>
+            </View>}
 
 
           <FastImage source={{uri:item.profile}} style={styles.astroImg1} />
@@ -590,7 +628,6 @@ const handleStartChat = (item:any)=>{
                             });
               }else{
                 setProfileSelector(true);
-                // createOrderChatApi(item.id);
               }
               
               // if(walletBalance==0){
@@ -840,11 +877,11 @@ const handleStartChat = (item:any)=>{
 
 
             
-            <ProfileSelector
+             {ServiceConstants.User_ID!=null && <ProfileSelector
                 name={selectedName} 
                 visible={profileSelector} 
                 onClose={handleCloseProfile} 
-                onStartChat={handleStartChat} />
+                onStartChat={handleStartChat} />}
                        
 
              <AppSpinner show={activity} />
@@ -859,6 +896,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: 0,
+    backgroundColor:'#FFF'
   },
   header: {
     flexDirection: 'row',
@@ -1010,6 +1048,8 @@ profileWrapper: {
     marginEnd: 10,
     resizeMode: 'cover',
     borderRadius: 20,
+       borderColor:'gray',
+    borderWidth:.2,
    
     elevation: 4, // Android shadow
     // iOS shadow
@@ -1047,8 +1087,15 @@ astroCard: {
     borderRadius: 16,
     padding: 12,
     alignItems: 'center',
-    elevation: 3,
     overflow: 'hidden', 
+    borderColor:'gray',
+    borderWidth:.2,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
+    elevation: 4,
 },
 ribbonContainer: {
   position: "absolute",
@@ -1154,6 +1201,8 @@ remedyText: {
     borderRadius: 12,
     // padding: 12,
     elevation: 3,
+       borderColor:'gray',
+    borderWidth:.2,
   },
 viewerBadge: {
   position: 'absolute',
@@ -1238,7 +1287,7 @@ divider2: {
   },
   bottomContainer: {
     position: 'absolute',
-    bottom: Platform.OS==='android'?'16%':135,   // <-- PLACE ABOVE YOUR TAB BAR
+    bottom: '13%',   // <-- PLACE ABOVE YOUR TAB BAR
     width: width,
     paddingHorizontal: 12,
     flexDirection: 'row',

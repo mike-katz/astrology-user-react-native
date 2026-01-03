@@ -35,6 +35,8 @@ import { useTranslation } from 'react-i18next';
 import i18n from "../../localization/i18n";
 import { resetWaitListData } from '../../redux/slices/waitListSlice';
 import { clearProfileList } from '../../redux/slices/profileListSlice';
+import Feather from 'react-native-vector-icons/Feather';
+import FastImage from 'react-native-fast-image';
 export default function LoginScreen() {
   const { t } = useTranslation();
   // i18n.changeLanguage('hi');
@@ -117,7 +119,7 @@ export default function LoginScreen() {
 
       {/* Logo */}
       <View style={styles.logoContainer}>
-        <Image
+        <FastImage
           source={require('../../assets/icons/AstroGurujiLogoApp.png')}
           style={styles.logo}
         />
@@ -156,11 +158,12 @@ export default function LoginScreen() {
             }}
             renderFlagButton={() => (
               <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => setVisible(true)} >
-                <Image
+                <FastImage
                   source={{ uri: `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png` }}
                   style={{ width: 30, height: 20, marginLeft: 5 }}
                 />
-                <Text style={{ color: '#000', fontSize: 16, marginLeft: 5,fontFamily: Fonts.SemiBold, }}>+{country?.callingCode?.[0] || '91'}</Text>
+                  <Text style={{ color: '#000', fontSize: 16, marginLeft: 5, fontFamily: Fonts.SemiBold, }}>+{country?.callingCode?.[0] || '91'}</Text>
+                  <Feather name="chevron-down" size={18} color="#000" />
               </TouchableOpacity>
             )}
           />
@@ -264,11 +267,11 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     marginTop: '21%',
-    marginBottom: 15,
+    // marginBottom: 15,
   },
   logo: {
-    height: 150,
-    width: 150,
+    height: 170,
+    width: 170,
   },
   title: {
     fontFamily: Fonts.SemiBold,

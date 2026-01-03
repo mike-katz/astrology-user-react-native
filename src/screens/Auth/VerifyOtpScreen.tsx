@@ -31,7 +31,7 @@ type VerifyOtpScreenProps = {
   route: RouteProp<RootStackParamList, 'VerifyOtp'>;
 };
 const OTP_LENGTH = 4;
-const RESEND_OTP_TIMER = 30;
+const RESEND_OTP_TIMER = 60;
 
 const VerifyOtpScreen = ({ route, navigation }: VerifyOtpScreenProps) => {
   const { phone, countrycode } = route.params;
@@ -197,7 +197,7 @@ const VerifyOtpScreen = ({ route, navigation }: VerifyOtpScreenProps) => {
       <View style={styles.headerContainer}>
         <TouchableOpacity style={{ width: '40%' }} onPress={handleBack}>
           <View style={styles.backButton}>
-            <BackIcon size={16} onPress={handleBack} />
+            <BackIcon size={16} onPress={handleBack} tintColor={undefined} />
             <Text style={styles.backTitle}>Back</Text>
           </View>
         </TouchableOpacity>
@@ -226,7 +226,8 @@ const VerifyOtpScreen = ({ route, navigation }: VerifyOtpScreenProps) => {
 
         <TouchableOpacity onPress={handleResend} disabled={timer > 0}>
           <Text style={styles.resendText}>
-            Resend OTP in: {timer > 0 ? timer : 'Tap to resend'}
+            {/* Resend OTP in: {timer > 0 ? timer : 'Tap to resend'} */}
+            Resend OTP in: {timer}sec
           </Text>
         </TouchableOpacity>
 
@@ -257,6 +258,14 @@ const VerifyOtpScreen = ({ route, navigation }: VerifyOtpScreenProps) => {
         <TouchableOpacity style={styles.verifyButton} onPress={handleVerify}>
           <Text style={styles.verifyText}>Verify Phone</Text>
         </TouchableOpacity>
+
+          {timer === 0 &&<Text style={styles.otpAvailable}>
+            Resend OTP available
+          </Text>}
+
+       {timer === 0 && <TouchableOpacity style={styles.resendButton} onPress={handleResend}>
+          <Text style={styles.verifyText}>Resend OTP on SMS</Text>
+        </TouchableOpacity>}
 
         <Text style={styles.consentText}>
           By continuing, you accept that you are above 18 years of age, consent to receiving WhatsApp message & agree to our {'\n'}<Text style={styles.terms} onPress={() => Linking.openURL('https://www.google.com/')}>Terms and Conditions</Text>
@@ -379,6 +388,21 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 16,
     fontWeight: '600',
+  },
+  otpAvailable:{
+    fontFamily:Fonts.Regular,
+    textAlign: 'left',
+    color: '#999',
+     marginTop: 20,
+    marginBottom: 10,
+    fontSize: 13,
+  },
+    resendButton: {
+    backgroundColor: colors.primaryColor,
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 20,
   },
   consentText: {
     fontFamily:Fonts.Regular,

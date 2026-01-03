@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     flexDirection: 'row',
     backgroundColor: '#fff',
-    height: Platform.OS === 'ios' ? '12%' : '12%', //100 and 80 are the heights for iOS and Android respectively
+    height: Platform.OS === 'ios' ? '9%' : '9%', //100 and 80 are the heights for iOS and Android respectively
     borderTopLeftRadius: 20,//30
     borderTopRightRadius: 20, //30
     shadowColor: '#000',
@@ -107,13 +107,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     zIndex: 100, // ensure it's above the screen
-    paddingBottom:Platform.OS === 'android' ?26:8
+    // paddingBottom:Platform.OS === 'android' ?26:8
   },
   tabButton: {
     flex: 1,
     justifyContent:'center',
     alignItems: 'center',
-    marginBottom: Platform.OS === 'ios' ? '4%' : 0, // Adjust for iOS
+    marginTop:6
+    // marginBottom: Platform.OS === 'ios' ? '4%' : 0, // Adjust for iOS
   },
 });
 

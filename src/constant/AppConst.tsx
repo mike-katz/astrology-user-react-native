@@ -9,7 +9,15 @@ export class AppConst {
   static isStoreSelected: any = false;
 
 }
-export const formatKnowledge = (arr) => arr.map(k => k.charAt(0).toUpperCase() + k.slice(1)).join(", ");
+export const formatKnowledge = (arr?: string[] | null) => {
+  if (!Array.isArray(arr) || arr.length === 0) {
+    return "";
+  }
+
+  return arr
+    .map(k => k.charAt(0).toUpperCase() + k.slice(1))
+    .join(", ");
+};
 export const getRoundPriceFrom4DecimalPoints = (price: any) => {
   return Math.round((Number(price) + Number.EPSILON) * 100) / 100;
 };
